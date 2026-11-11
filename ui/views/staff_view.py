@@ -121,7 +121,7 @@ class StaffView(ctk.CTkFrame):
                 text=label,
                 height=30,
                 width=110 if key != "All" else 90,
-                font=ctk.CTkFont(size=10.5, weight="bold"),
+                font=ctk.CTkFont(size=11, weight="bold"),
                 fg_color=COLOR_CYAN if key == "All" else ("#1E293B" if is_dark else "#E2E8F0"),
                 text_color="#001633" if key == "All" else ("#FFFFFF" if is_dark else "#0F172A"),
                 hover_color=COLOR_CYAN_HOVER,
@@ -276,7 +276,7 @@ class StaffView(ctk.CTkFrame):
             name_box = ctk.CTkFrame(row, fg_color="transparent", width=210)
             name_box.pack(side="left", padx=5)
             ctk.CTkLabel(name_box, text=s["name"], font=ctk.CTkFont(size=11, weight="bold"), anchor="w").pack(anchor="w")
-            ctk.CTkLabel(name_box, text=s["designation"][:30], font=ctk.CTkFont(size=9.5), text_color="#94A3B8", anchor="w").pack(anchor="w")
+            ctk.CTkLabel(name_box, text=s["designation"][:30], font=ctk.CTkFont(size=10), text_color="#94A3B8", anchor="w").pack(anchor="w")
 
             # Category Badge
             cat_col = "#0284C7" if "Teacher" in s["category"] else ("#8B5CF6" if "Director" in s["category"] else "#64748B")
@@ -285,7 +285,7 @@ class StaffView(ctk.CTkFrame):
             ctk.CTkLabel(cat_box, text=s["category"].split("/")[0].strip(), font=ctk.CTkFont(size=10, weight="bold"), text_color="#FFFFFF").pack(padx=6, pady=2)
 
             # Phone
-            ctk.CTkLabel(row, text=s["phone"] or "—", width=100, anchor="w", font=ctk.CTkFont(size=10.5)).pack(side="left", padx=5)
+            ctk.CTkLabel(row, text=s["phone"] or "—", width=100, anchor="w", font=ctk.CTkFont(size=11)).pack(side="left", padx=5)
 
             # Monthly Salary
             ctk.CTkLabel(row, text=f"₹{float(s['monthly_salary']):,.0f}", width=105, anchor="w", font=ctk.CTkFont(size=11, weight="bold"), text_color="#10B981").pack(side="left", padx=5)
@@ -294,7 +294,7 @@ class StaffView(ctk.CTkFrame):
             adv = float(s["advance_balance"])
             adv_color = "#F59E0B" if adv > 0 else "#64748B"
             adv_text = f"₹{adv:,.0f} (बाकी)" if adv > 0 else "₹0 (क्लियर)"
-            ctk.CTkLabel(row, text=adv_text, width=115, anchor="w", font=ctk.CTkFont(size=10.5, weight="bold"), text_color=adv_color).pack(side="left", padx=5)
+            ctk.CTkLabel(row, text=adv_text, width=115, anchor="w", font=ctk.CTkFont(size=11, weight="bold"), text_color=adv_color).pack(side="left", padx=5)
 
             # Actions Box (Pay, History, Edit, Delete)
             act_box = ctk.CTkFrame(row, fg_color="transparent", width=240)
@@ -507,7 +507,7 @@ class StaffView(ctk.CTkFrame):
         ctk.CTkLabel(d, text=f"💸 वेतन व एडवांस भुगतान: {staff['name']}", font=ctk.CTkFont(family="Segoe UI", size=14, weight="bold"), text_color=COLOR_CYAN).pack(pady=(14, 4))
         adv = float(staff["advance_balance"])
         adv_info = f"वर्तमान बकाया एडवांस: ₹{adv:,.0f} | तय मासिक वेतन: ₹{float(staff['monthly_salary']):,.0f}"
-        ctk.CTkLabel(d, text=adv_info, font=ctk.CTkFont(size=10.5), text_color="#F59E0B" if adv > 0 else "#94A3B8").pack(pady=(0, 10))
+        ctk.CTkLabel(d, text=adv_info, font=ctk.CTkFont(size=11), text_color="#F59E0B" if adv > 0 else "#94A3B8").pack(pady=(0, 10))
 
         f = ctk.CTkFrame(d, fg_color="transparent")
         f.pack(fill="x", padx=30)
@@ -601,4 +601,4 @@ class StaffView(ctk.CTkFrame):
             sub = f"तारीख: {h['payment_date']} | मोड: {h['payment_mode']} | दर्जकर्ता: {h['recorded_by']}"
             if h.get("notes"):
                 sub += f" | नोट: {h['notes']}"
-            ctk.CTkLabel(bot, text=sub, font=ctk.CTkFont(size=9.5), text_color="#94A3B8").pack(side="left")
+            ctk.CTkLabel(bot, text=sub, font=ctk.CTkFont(size=10), text_color="#94A3B8").pack(side="left")

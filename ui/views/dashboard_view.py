@@ -169,7 +169,7 @@ class DashboardView(ctk.CTkFrame):
             height=30,
             fg_color="#0284C7",
             hover_color="#0369A1",
-            font=ctk.CTkFont(size=10.5, weight="bold"),
+            font=ctk.CTkFont(size=11, weight="bold"),
             command=lambda: self.on_navigate("admission")
         ).pack(side="left", padx=4)
 
@@ -180,7 +180,7 @@ class DashboardView(ctk.CTkFrame):
             fg_color="#10B981",
             hover_color="#059669",
             text_color="#FFFFFF",
-            font=ctk.CTkFont(size=10.5, weight="bold"),
+            font=ctk.CTkFont(size=11, weight="bold"),
             command=lambda: self.on_navigate("staff")
         ).pack(side="left", padx=4)
 
@@ -191,7 +191,7 @@ class DashboardView(ctk.CTkFrame):
             fg_color="#6366F1",
             hover_color="#4F46E5",
             text_color="#FFFFFF",
-            font=ctk.CTkFont(size=10.5, weight="bold"),
+            font=ctk.CTkFont(size=11, weight="bold"),
             command=lambda: self.on_navigate("timetable")
         ).pack(side="left", padx=4)
 
@@ -202,7 +202,7 @@ class DashboardView(ctk.CTkFrame):
             fg_color="#F59E0B",
             hover_color="#D97706",
             text_color="#001633",
-            font=ctk.CTkFont(size=10.5, weight="bold"),
+            font=ctk.CTkFont(size=11, weight="bold"),
             command=lambda: self.on_navigate("expenses")
         ).pack(side="left", padx=4)
 
