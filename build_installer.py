@@ -18,6 +18,7 @@ def build():
         "--windowed", # No black command prompt console
         "--noconsole",
         "--collect-all=customtkinter",
+        "--version-file=file_version_info.txt",
         "--add-data=Logo.png;.",
         "--add-data=app_config.json;.",
         "--add-data=core;core",
