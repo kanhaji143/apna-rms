@@ -152,6 +152,60 @@ class DashboardView(ctk.CTkFrame):
             )
             btn_go_due.pack(side="right", padx=16, pady=8)
 
+        # Quick Navigation Bar
+        quick_bar = ctk.CTkFrame(self, fg_color="transparent")
+        quick_bar.pack(fill="x", padx=16, pady=(0, 10))
+
+        ctk.CTkLabel(
+            quick_bar,
+            text="⚡ त्वरित कार्य (Quick Actions):",
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+            text_color="#94A3B8" if is_dark else "#64748B"
+        ).pack(side="left", padx=(0, 8))
+
+        ctk.CTkButton(
+            quick_bar,
+            text="📝 नया Admission",
+            height=30,
+            fg_color="#0284C7",
+            hover_color="#0369A1",
+            font=ctk.CTkFont(size=10.5, weight="bold"),
+            command=lambda: self.on_navigate("admission")
+        ).pack(side="left", padx=4)
+
+        ctk.CTkButton(
+            quick_bar,
+            text="👥 स्टाफ व फैकल्टी प्रबंधन",
+            height=30,
+            fg_color="#10B981",
+            hover_color="#059669",
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(size=10.5, weight="bold"),
+            command=lambda: self.on_navigate("staff")
+        ).pack(side="left", padx=4)
+
+        ctk.CTkButton(
+            quick_bar,
+            text="📅 Time-Table",
+            height=30,
+            fg_color="#6366F1",
+            hover_color="#4F46E5",
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(size=10.5, weight="bold"),
+            command=lambda: self.on_navigate("timetable")
+        ).pack(side="left", padx=4)
+
+        ctk.CTkButton(
+            quick_bar,
+            text="💰 दैनिक खर्च दर्ज करें",
+            height=30,
+            fg_color="#F59E0B",
+            hover_color="#D97706",
+            text_color="#001633",
+            font=ctk.CTkFont(size=10.5, weight="bold"),
+            command=lambda: self.on_navigate("expenses")
+        ).pack(side="left", padx=4)
+
         # Recent Admissions Table Card
         table_card = ctk.CTkFrame(
             self,

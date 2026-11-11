@@ -658,6 +658,24 @@ class DatabaseManager:
             conn.commit()
             return cursor.lastrowid
 
+    def update_staff_member(self, staff_id, name, category, designation, phone, monthly_salary):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+            UPDATE staff_members
+            SET name = ?, category = ?, designation = ?, phone = ?, monthly_salary = ?
+            WHERE id = ?
+            """, (name.strip(), category, designation.strip(), phone.strip(), float(monthly_salary), staff_id))
+            conn.commit()
+            return True
+
+    def delete_staff_member(self, staff_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE staff_members SET status = 'Inactive' WHERE id = ?", (staff_id,))
+            conn.commit()
+            return True
+
     def record_staff_payment(self, staff_id, entry_type, amount, payment_date, payment_mode, month_cycle, notes="", recorded_by="Admin"):
         """
         Records staff payment (Salary, Advance Given, Advance Settled, Late / Due Salary).

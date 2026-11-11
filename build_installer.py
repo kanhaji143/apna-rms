@@ -19,6 +19,7 @@ def build():
         "--noconsole",
         "--collect-all=customtkinter",
         "--add-data=Logo.png;.",
+        "--add-data=app_config.json;.",
         "--add-data=core;core",
         "--add-data=ui;ui",
         "app.py"

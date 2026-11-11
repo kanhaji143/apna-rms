@@ -227,7 +227,7 @@ class TimetableView(ctk.CTkFrame):
     def show_add_dialog(self):
         d = ctk.CTkToplevel(self)
         d.title("Add Class Schedule")
-        d.geometry("450x420")
+        d.geometry("450x430")
         d.grab_set()
 
         ctk.CTkLabel(d, text="📅 नई क्लास जोड़ें (Add Class Schedule)", font=ctk.CTkFont(size=15, weight="bold"), text_color=COLOR_CYAN).pack(pady=(16, 12))
@@ -239,8 +239,15 @@ class TimetableView(ctk.CTkFrame):
         day_opt = ctk.CTkOptionMenu(f, values=DAYS[1:], height=34)
         day_opt.pack(fill="x", pady=(0, 6))
 
-        ctk.CTkLabel(f, text="टीचर का नाम (Teacher Name):", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w")
-        t_entry = ctk.CTkEntry(f, height=34, placeholder_text="उदा: अमित सर")
+        db = DatabaseManager.get_instance()
+        staff_teachers = [s["name"] for s in db.get_all_staff() if s.get("status") != "Inactive"]
+        if not staff_teachers:
+            staff_teachers = ["अमित सर", "प्रिया मैम", "सुनील जी"]
+
+        ctk.CTkLabel(f, text="टीचर का नाम (चुनें या लिखें):", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w")
+        t_entry = ctk.CTkComboBox(f, values=staff_teachers, height=34)
+        if staff_teachers:
+            t_entry.set(staff_teachers[0])
         t_entry.pack(fill="x", pady=(0, 6))
 
         ctk.CTkLabel(f, text="सब्जेक्ट / कोर्स (Subject):", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w")
@@ -289,9 +296,16 @@ class TimetableView(ctk.CTkFrame):
         chk = ctk.CTkCheckBox(f, text="टीचर आज छुट्टी (Leave) पर हैं", variable=leave_var, font=ctk.CTkFont(weight="bold"))
         chk.pack(anchor="w", pady=10)
 
-        ctk.CTkLabel(f, text="सब्स्टीट्यूट टीचर का नाम (Substitute Teacher):", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w")
-        sub_entry = ctk.CTkEntry(f, height=34, placeholder_text="उदा: विकास सर")
-        sub_entry.insert(0, current_sub)
+        ctk.CTkLabel(f, text="सब्स्टीट्यूट टीचर (चुनें या लिखें):", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w")
+        db = DatabaseManager.get_instance()
+        staff_teachers = [s["name"] for s in db.get_all_staff() if s.get("status") != "Inactive"]
+        if not staff_teachers:
+            staff_teachers = ["विकास सर", "अमित सर", "प्रिया मैम"]
+        sub_entry = ctk.CTkComboBox(f, values=staff_teachers, height=34)
+        if current_sub:
+            sub_entry.set(current_sub)
+        elif staff_teachers:
+            sub_entry.set(staff_teachers[0])
         sub_entry.pack(fill="x", pady=(0, 10))
 
         def save_leave():
