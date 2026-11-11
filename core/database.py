@@ -41,9 +41,22 @@ class DatabaseManager:
         return cls._instance
 
     def get_connection(self):
-        conn = sqlite3.connect(str(self.db_path))
+        conn = sqlite3.connect(str(self.db_path), timeout=15.0)
         conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("PRAGMA journal_mode = WAL")
+            conn.execute("PRAGMA synchronous = NORMAL")
+            conn.execute("PRAGMA cache_size = 10000")
+        except Exception:
+            pass
         return conn
+
+    def get_pending_activations_count(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM admissions WHERE activation_status = 'Pending'")
+            row = cursor.fetchone()
+            return row[0] if row else 0
 
     def init_database(self):
         with self.get_connection() as conn:

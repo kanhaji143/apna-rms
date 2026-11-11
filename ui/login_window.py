@@ -66,6 +66,7 @@ class LoginWindow(ctk.CTk):
             placeholder_text="Enter username...",
             font=ctk.CTkFont(size=13)
         )
+        self.user_entry.insert(0, "admin")
         self.user_entry.pack(fill="x", pady=(0, 14))
 
         lbl_pass = ctk.CTkLabel(form_frame, text="पासवर्ड (Password):", font=ctk.CTkFont(size=12, weight="bold"))
@@ -77,11 +78,20 @@ class LoginWindow(ctk.CTk):
             placeholder_text="Enter password...",
             font=ctk.CTkFont(size=13)
         )
+        self.pass_entry.insert(0, "admin123")
         self.pass_entry.pack(fill="x", pady=(0, 8))
 
         # Enter key triggers login
         self.pass_entry.bind("<Return>", lambda e: self.do_login())
         self.user_entry.bind("<Return>", lambda e: self.do_login())
+
+        # Credential Hint
+        ctk.CTkLabel(
+            form_frame,
+            text="💡 डिफ़ॉल्ट एडमिन: admin / admin123",
+            font=ctk.CTkFont(size=11),
+            text_color="#94A3B8"
+        ).pack(anchor="w", pady=(0, 4))
 
         # Error / Status Label
         self.error_label = ctk.CTkLabel(

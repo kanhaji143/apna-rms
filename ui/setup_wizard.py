@@ -315,6 +315,8 @@ class SetupWizard(ctk.CTk):
             save_config(config)
 
             db = DatabaseManager.get_instance(str(demo_dir / "apna_records.db"))
+            # Persist master recovery key displayed on screen
+            AuthManager.save_master_recovery_key(self.generated_master_key)
             AuthManager.ensure_default_staff_roles()
             db.reset_to_demo_data()
 

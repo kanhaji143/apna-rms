@@ -47,6 +47,7 @@ class MainWindow(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW", self.on_close_app)
 
         self.current_view = None
+        self.views_cache = {}
         self.setup_ui()
         role = self.current_user.get("role", "caller").lower()
         default_view = "admission" if role == "caller" else "dashboard"
@@ -88,32 +89,54 @@ class MainWindow(ctk.CTk):
 
     def navigate_to(self, view_name):
         if self.current_view:
-            self.current_view.destroy()
+            self.current_view.pack_forget()
 
-        if view_name == "dashboard":
-            self.current_view = DashboardView(self.content_frame, self.current_user, on_navigate=self.navigate_to)
-        elif view_name == "admission":
-            self.current_view = AdmissionView(self.content_frame, self.current_user, on_record_saved_callback=self.on_data_updated)
-        elif view_name == "records":
-            self.current_view = RecordsView(self.content_frame, self.current_user, on_refresh_callback=self.on_data_updated)
-        elif view_name == "activations":
-            self.current_view = ActivationView(self.content_frame, self.current_user, on_refresh_callback=self.on_data_updated)
-        elif view_name == "timetable":
-            self.current_view = TimetableView(self.content_frame, self.current_user)
-        elif view_name == "staff":
-            self.current_view = StaffView(self.content_frame, self.current_user)
-        elif view_name == "expenses":
-            self.current_view = ExpensesView(self.content_frame, self.current_user)
-        elif view_name == "reports":
-            self.current_view = ReportsView(self.content_frame, self.current_user)
-        elif view_name == "settings":
-            self.current_view = SettingsView(self.content_frame, self.current_user, on_config_updated_callback=self.on_config_updated)
+        if view_name not in self.views_cache:
+            if view_name == "dashboard":
+                self.views_cache[view_name] = DashboardView(self.content_frame, self.current_user, on_navigate=self.navigate_to)
+            elif view_name == "admission":
+                self.views_cache[view_name] = AdmissionView(self.content_frame, self.current_user, on_record_saved_callback=self.on_data_updated)
+            elif view_name == "records":
+                self.views_cache[view_name] = RecordsView(self.content_frame, self.current_user, on_refresh_callback=self.on_data_updated)
+            elif view_name == "activations":
+                self.views_cache[view_name] = ActivationView(self.content_frame, self.current_user, on_refresh_callback=self.on_data_updated)
+            elif view_name == "timetable":
+                self.views_cache[view_name] = TimetableView(self.content_frame, self.current_user)
+            elif view_name == "staff":
+                self.views_cache[view_name] = StaffView(self.content_frame, self.current_user)
+            elif view_name == "expenses":
+                self.views_cache[view_name] = ExpensesView(self.content_frame, self.current_user)
+            elif view_name == "reports":
+                self.views_cache[view_name] = ReportsView(self.content_frame, self.current_user)
+            elif view_name == "settings":
+                self.views_cache[view_name] = SettingsView(self.content_frame, self.current_user, on_config_updated_callback=self.on_config_updated)
 
+        self.current_view = self.views_cache[view_name]
         self.current_view.pack(fill="both", expand=True)
+
+        # Lightning fast data reload
+        if hasattr(self.current_view, "load_records"):
+            self.current_view.load_records()
+        elif hasattr(self.current_view, "load_staff_data"):
+            self.current_view.load_staff_data()
+        elif hasattr(self.current_view, "load_queue"):
+            self.current_view.load_queue()
+        elif hasattr(self.current_view, "load_expenses"):
+            self.current_view.load_expenses()
+        elif hasattr(self.current_view, "load_schedule"):
+            self.current_view.load_schedule()
+
         self.sidebar.refresh_badges()
 
     def on_data_updated(self):
         self.sidebar.refresh_badges()
+        # Invalidate dashboard so metrics re-compute next time it is visited
+        if "dashboard" in self.views_cache:
+            try:
+                self.views_cache["dashboard"].destroy()
+                del self.views_cache["dashboard"]
+            except Exception:
+                pass
 
     def on_config_updated(self):
         # Refresh header branding if logo/name updated
@@ -129,7 +152,15 @@ class MainWindow(ctk.CTk):
 
     def handle_theme_change(self, new_theme):
         self.configure(fg_color=COLOR_NAVY_DARK if new_theme == "dark" else COLOR_LIGHT_BG)
-        # Reload current view with new theme colors
+        # Clear cached views so they re-render in new theme colors
+        for v in self.views_cache.values():
+            try:
+                v.destroy()
+            except Exception:
+                pass
+        self.views_cache.clear()
+        self.current_view = None
+
         current_tab = self.sidebar.active_tab
         self.sidebar.destroy()
         self.sidebar = AppSidebar(
@@ -141,7 +172,15 @@ class MainWindow(ctk.CTk):
         self.navigate_to(current_tab)
 
     def handle_lang_change(self, new_lang):
-        # Re-render header & sidebar & view
+        # Clear cached views so they re-render in new language strings
+        for v in self.views_cache.values():
+            try:
+                v.destroy()
+            except Exception:
+                pass
+        self.views_cache.clear()
+        self.current_view = None
+
         current_tab = self.sidebar.active_tab
         self.header.destroy()
         self.header = AppHeader(

@@ -116,8 +116,7 @@ class AppSidebar(ctk.CTkFrame):
 
     def refresh_badges(self):
         db = DatabaseManager.get_instance()
-        metrics = db.get_dashboard_metrics()
-        pending = metrics.get("pending_activations", 0)
+        pending = db.get_pending_activations_count()
         lang = self.config.get("language", "hi")
         if "activations" in self.buttons:
             text = f"🚩  {t('nav_activations', lang)}"
