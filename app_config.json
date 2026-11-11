@@ -1,0 +1,20 @@
+{
+    "is_setup_completed": true,
+    "storage_path": "D:/APNA_RMS_DATA",
+    "institute_name": "APNA COMPUTER",
+    "institute_tagline": "कंप्यूटर और कौशल प्रशिक्षण संस्थान",
+    "institute_phone": "",
+    "institute_email": "",
+    "institute_address": "",
+    "logo_path": "E:\\AI\\Boot Camp 3.0\\Operating Software\\Logo.png",
+    "theme": "dark",
+    "language": "en",
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "smtp_email": "krishnaskb143@gmail.com",
+    "smtp_password": "",
+    "admin_backup_email": "krishnaskb143@gmail.com",
+    "youtube_link": "",
+    "instagram_link": "",
+    "telegram_link": ""
+}

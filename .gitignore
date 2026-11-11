@@ -1,0 +1,23 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller build artifacts
+build/
+*.manifest
+
+# Local temp database & test databases
+local_storage/
+*.tmp
+*.log
+
+# Windows thumbnail cache
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# Virtual environment (if any)
+.venv/
+venv/
+env/
