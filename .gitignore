@@ -11,6 +11,7 @@ build/
 local_storage/
 *.tmp
 *.log
+test_sample_*.pdf
 
 # Windows thumbnail cache
 Thumbs.db
