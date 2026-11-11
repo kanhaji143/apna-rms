@@ -117,6 +117,41 @@ class DashboardView(ctk.CTkFrame):
                 text_color=color
             ).pack(anchor="w", padx=16, pady=(0, 14))
 
+        # Due Fees Warning & Reminder Banner
+        due_val = metrics.get("total_due_fee", 0.0)
+        due_count = metrics.get("due_students_count", 0)
+        if due_val > 0:
+            due_banner = ctk.CTkFrame(
+                self,
+                fg_color="#381E05" if is_dark else "#FEF3C7",
+                corner_radius=10,
+                border_width=1,
+                border_color="#F59E0B"
+            )
+            due_banner.pack(fill="x", padx=16, pady=(0, 14))
+
+            db_left = ctk.CTkFrame(due_banner, fg_color="transparent")
+            db_left.pack(side="left", padx=16, pady=10)
+
+            ctk.CTkLabel(
+                db_left,
+                text=f"💳 बकाया फीस अलर्ट (Pending Fee Alert): कुल {due_count} छात्रों की ₹{due_val:,.0f} फीस किस्त बकाया है।",
+                font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
+                text_color="#FDE68A" if is_dark else "#92400E"
+            ).pack(side="left")
+
+            btn_go_due = ctk.CTkButton(
+                due_banner,
+                text="बकाया छात्र देखें व WhatsApp रिमाइंडर भेजें ➡️",
+                height=30,
+                fg_color="#D97706",
+                hover_color="#B45309",
+                text_color="#FFFFFF",
+                font=ctk.CTkFont(size=11, weight="bold"),
+                command=lambda: self.on_navigate("records")
+            )
+            btn_go_due.pack(side="right", padx=16, pady=8)
+
         # Recent Admissions Table Card
         table_card = ctk.CTkFrame(
             self,

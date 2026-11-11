@@ -374,13 +374,27 @@ class DatabaseManager:
 
             net_profit = total_revenue - total_expenses
 
+            # Calculate Total Pending Due Fees
+            cursor.execute("""
+            SELECT 
+                COUNT(*),
+                COALESCE(SUM(CASE WHEN (original_fee - concession_amount) > final_amount THEN ((original_fee - concession_amount) - final_amount) ELSE 0.0 END), 0.0)
+            FROM admissions
+            WHERE (original_fee - concession_amount) > final_amount
+            """)
+            due_row = cursor.fetchone()
+            due_students_count = due_row[0] if due_row else 0
+            total_due_fee = due_row[1] if due_row else 0.0
+
             return {
                 "total_admissions": total_admissions,
                 "today_admissions": today_admissions,
                 "pending_activations": pending_activations,
                 "total_revenue": total_revenue,
                 "total_expenses": total_expenses,
-                "net_profit": net_profit
+                "net_profit": net_profit,
+                "total_due_fee": total_due_fee,
+                "due_students_count": due_students_count
             }
 
     # --- Timetable Operations ---
@@ -560,9 +574,9 @@ class DatabaseManager:
             {"name": "Vikram Singh", "phone": "7867890154", "email": "vikram.singh@outlook.com", "courses": "Tally Prime with GST & Accounting", "orig_fee": 5500.0, "disc": 500.0, "disc_reason": "One-time Full Payment Offer", "final_amt": 5000.0, "mode": "UPI QR", "acc": "APNA Center / ICICI", "utr": "432109876504", "date": (today - timedelta(days=2)).strftime("%Y-%m-%d"), "status": "Activated", "act_at": (today - timedelta(days=1)).strftime("%Y-%m-%d %H:%M"), "act_by": "Founder (Admin)", "source": "Walk-in", "caller": "एडमिशन काउंसलर (Staff)"},
             {"name": "Neha Gupta", "phone": "9478901265", "email": "neha.gupta@gmail.com", "courses": "Graphic Designing (Photoshop & Illustrator)", "orig_fee": 7000.0, "disc": 1000.0, "disc_reason": "Women in Tech Scholarship", "final_amt": 6000.0, "mode": "Cash / नकद", "acc": "Cash / नकद (काउंटर)", "utr": "", "date": (today - timedelta(days=2)).strftime("%Y-%m-%d"), "status": "Activated", "act_at": (today - timedelta(days=1)).strftime("%Y-%m-%d %H:%M"), "act_by": "Founder (Admin)", "source": "Walk-in", "caller": "एडमिशन काउंसलर (Staff)"},
             {"name": "Suresh Patel", "phone": "8189012376", "email": "suresh.patel@gmail.com", "courses": "CCC (Course on Computer Concepts)", "orig_fee": 2500.0, "disc": 0.0, "disc_reason": "", "final_amt": 2500.0, "mode": "UPI QR", "acc": "APNA Center / HDFC Bank", "utr": "432109876505", "date": (today - timedelta(days=1)).strftime("%Y-%m-%d"), "status": "Activated", "act_at": today.strftime("%Y-%m-%d %H:%M"), "act_by": "Founder (Admin)", "source": "Telecalling", "caller": "एडमिशन काउंसलर (Staff)"},
-            {"name": "Deepak Yadav", "phone": "9690123487", "email": "deepak.yadav@gmail.com", "courses": "Full-Stack Web Development", "orig_fee": 12000.0, "disc": 1500.0, "disc_reason": "Special Refer Discount", "final_amt": 10500.0, "mode": "UPI QR", "acc": "APNA Center / SBI", "utr": "432109876506", "date": today.strftime("%Y-%m-%d"), "status": "Pending", "act_at": "", "act_by": "", "source": "Telecalling", "caller": "एडमिशन काउंसलर (Staff)"},
+            {"name": "Deepak Yadav", "phone": "9690123487", "email": "deepak.yadav@gmail.com", "courses": "Full-Stack Web Development", "orig_fee": 12000.0, "disc": 1500.0, "disc_reason": "Special Refer Discount", "final_amt": 6000.0, "mode": "UPI QR", "acc": "APNA Center / SBI", "utr": "432109876506", "date": today.strftime("%Y-%m-%d"), "status": "Pending", "act_at": "", "act_by": "", "source": "Telecalling", "caller": "एडमिशन काउंसलर (Staff)"},
             {"name": "Kavita Choudhary", "phone": "7001234598", "email": "kavita.choudhary@gmail.com", "courses": "Spoken English & Communication", "orig_fee": 4000.0, "disc": 500.0, "disc_reason": "Sibling Discount", "final_amt": 3500.0, "mode": "Cash / नकद", "acc": "Cash / नकद (काउंटर)", "utr": "", "date": today.strftime("%Y-%m-%d"), "status": "Pending", "act_at": "", "act_by": "", "source": "Walk-in", "caller": "एडमिशन काउंसलर (Staff)"},
-            {"name": "Manish Tiwari", "phone": "9812345609", "email": "manish.tiwari@gmail.com", "courses": "Data Analytics & Advanced Excel", "orig_fee": 6500.0, "disc": 1000.0, "disc_reason": "Weekend Batch Offer", "final_amt": 5500.0, "mode": "UPI QR", "acc": "APNA Center / ICICI", "utr": "432109876507", "date": today.strftime("%Y-%m-%d"), "status": "Pending", "act_at": "", "act_by": "", "source": "Telecalling", "caller": "एडमिशन काउंसलर (Staff)"}
+            {"name": "Manish Tiwari", "phone": "9812345609", "email": "manish.tiwari@gmail.com", "courses": "Data Analytics & Advanced Excel", "orig_fee": 6500.0, "disc": 1000.0, "disc_reason": "Weekend Batch Offer", "final_amt": 3000.0, "mode": "UPI QR", "acc": "APNA Center / ICICI", "utr": "432109876507", "date": today.strftime("%Y-%m-%d"), "status": "Pending", "act_at": "", "act_by": "", "source": "Telecalling", "caller": "एडमिशन काउंसलर (Staff)"}
         ]
 
         for idx, s in enumerate(students_data, start=1):

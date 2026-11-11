@@ -60,8 +60,8 @@ class RecordsView(ctk.CTkFrame):
         ctk.CTkLabel(filter_box, text="Status:", font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=(0, 6))
         self.status_option = ctk.CTkOptionMenu(
             filter_box,
-            values=["All", "Pending", "Activated"],
-            width=110,
+            values=["All", "Pending", "Activated", "Due Fees (बकाया फीस)"],
+            width=130,
             height=36,
             fg_color=COLOR_NAVY_CARD if is_dark else "#FFFFFF",
             button_color=COLOR_CYAN,
@@ -69,7 +69,21 @@ class RecordsView(ctk.CTkFrame):
             text_color=COLOR_TEXT_LIGHT if is_dark else COLOR_TEXT_DARK,
             command=lambda v: self.load_records()
         )
-        self.status_option.pack(side="left", padx=(0, 14))
+        self.status_option.pack(side="left", padx=(0, 8))
+
+        # Quick Due Fees Filter Button
+        self.btn_due_filter = ctk.CTkButton(
+            filter_box,
+            text="💳 बकाया फीस (Due)",
+            height=36,
+            fg_color="#D97706",
+            hover_color="#B45309",
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            command=self.filter_due_fees
+        )
+        self.btn_due_filter.pack(side="left", padx=(0, 10))
+        CTkTooltip(self.btn_due_filter, "जिन छात्रों की फीस किस्त बाकी है केवल उन्हें 1-क्लिक में देखें")
 
         # Quick Refresh Button
         btn_refresh = ctk.CTkButton(
@@ -134,6 +148,10 @@ class RecordsView(ctk.CTkFrame):
 
         self.load_records()
 
+    def filter_due_fees(self):
+        self.status_option.set("Due Fees (बकाया फीस)")
+        self.load_records()
+
     def load_records(self):
         # Clear existing rows
         for widget in self.rows_frame.winfo_children():
@@ -144,7 +162,14 @@ class RecordsView(ctk.CTkFrame):
         status = self.status_option.get()
 
         db = DatabaseManager.get_instance()
-        admissions = db.get_admissions(status=status, search_query=search)
+        if status == "Due Fees (बकाया फीस)":
+            raw_admissions = db.get_admissions(status=None, search_query=search)
+            admissions = [
+                a for a in raw_admissions
+                if max(0.0, float(a.get("original_fee") or a.get("final_amount") or 0.0) - float(a.get("concession_amount") or 0.0) - float(a.get("final_amount") or 0.0)) > 0
+            ]
+        else:
+            admissions = db.get_admissions(status=status, search_query=search)
 
         if not admissions:
             ctk.CTkLabel(
@@ -530,6 +555,11 @@ class RecordsView(ctk.CTkFrame):
         tpl_frame.pack(fill="x", padx=20, pady=(0, 8))
 
         inst_name = self.config.get("institute_name", "अपना कंप्यूटर सेंटर")
+        orig = float(record.get("original_fee") or record.get("final_amount") or 0.0)
+        disc = float(record.get("concession_amount") or 0.0)
+        paid = float(record.get("final_amount") or 0.0)
+        net = max(0.0, orig - disc)
+        due = max(0.0, net - paid)
 
         def set_receipt_msg():
             msg_box.delete("1.0", "end")
@@ -550,25 +580,32 @@ class RecordsView(ctk.CTkFrame):
         def set_reminder_msg():
             msg_box.delete("1.0", "end")
             msg_text = (
-                f"नमस्ते {record['student_name']} जी! 📚\n\n"
-                f"{inst_name} से सादर सूचना: कृपया अपनी आगामी क्लास का समय ध्यान रखें व शेष फीस किस्त समय पर जमा करें।\n\n"
-                f"• कोर्स: {record['courses_taken']}\n"
-                f"• छात्र एडमिशन आईडी: {record['admission_no']}\n\n"
-                f"किसी भी सहायता या प्रश्न के लिए हमसे संपर्क करें।\n"
+                f"नमस्ते {record['student_name']} जी! 🎓\n\n"
+                f"{inst_name} से सादर नमस्ते!\n\n"
+                f"आपके कोर्स *{record['courses_taken']}* की फीस किस्त का विवरण:\n"
+                f"• कुल तय फीस: ₹{net:,.0f}\n"
+                f"• अब तक जमा राशि: ₹{paid:,.0f}\n"
+                f"• 👉 *शेष बकाया किस्त (Balance Due): ₹{due:,.0f}*\n\n"
+                f"कृपया असुविधा से बचने के लिए बकाया किस्त समय पर संस्थान काउंटर या UPI द्वारा जमा कराने का कष्ट करें।\n\n"
                 f"धन्यवाद!\n"
-                f"{inst_name}"
+                f"प्रबंधन, {inst_name}\n"
+                f"हेल्पलाइन: {self.config.get('institute_phone', '')}"
             )
             msg_box.insert("1.0", msg_text)
 
         btn_t1 = ctk.CTkButton(tpl_frame, text="🎉 एडमिशन रसीद मैसेज", height=28, font=ctk.CTkFont(size=10, weight="bold"), fg_color="#0284C7", command=set_receipt_msg)
         btn_t1.pack(side="left", padx=(0, 8))
 
-        btn_t2 = ctk.CTkButton(tpl_frame, text="⏰ फीस / क्लास रिमाइंडर", height=28, font=ctk.CTkFont(size=10, weight="bold"), fg_color="#EAB308", text_color="#001633", hover_color="#CA8A04", command=set_reminder_msg)
+        btn_t2 = ctk.CTkButton(tpl_frame, text="⏰ फीस किस्त रिमाइंडर", height=28, font=ctk.CTkFont(size=10, weight="bold"), fg_color="#EAB308", text_color="#001633", hover_color="#CA8A04", command=set_reminder_msg)
         btn_t2.pack(side="left")
 
-        msg_box = ctk.CTkTextbox(d, height=160, font=ctk.CTkFont(size=11))
+        msg_box = ctk.CTkTextbox(d, height=170, font=ctk.CTkFont(size=11))
         msg_box.pack(fill="x", padx=20, pady=8)
-        set_receipt_msg()
+
+        if due > 0:
+            set_reminder_msg()
+        else:
+            set_receipt_msg()
 
         def do_send():
             raw_text = msg_box.get("1.0", "end").strip()
