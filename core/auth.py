@@ -124,6 +124,14 @@ class AuthManager:
             cursor.execute("SELECT role FROM users")
             roles = [r[0] for r in cursor.fetchall()]
 
+            cursor.execute("SELECT username FROM users WHERE username = 'admin'")
+            if not cursor.fetchone():
+                pwd_hash = cls.hash_password("admin123")
+                cursor.execute("""
+                INSERT INTO users (username, password_hash, role, full_name)
+                VALUES ('admin', ?, 'admin', 'मुख्य एडमिन (Director Admin)')
+                """, (pwd_hash,))
+
             if "accountant" not in roles:
                 pwd_hash = cls.hash_password("accountant@123")
                 cursor.execute("""

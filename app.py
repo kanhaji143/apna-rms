@@ -22,6 +22,20 @@ class ApplicationController:
         is_setup_done = self.config.get("is_setup_completed", False)
         storage_path = self.config.get("storage_path", "")
 
+        if is_setup_done and storage_path:
+            try:
+                os.makedirs(storage_path, exist_ok=True)
+            except Exception:
+                # If configured drive (e.g. D:) does not exist on this machine, fallback to user home directory
+                storage_path = str(Path.home() / "APNA_RMS_DATA")
+                try:
+                    os.makedirs(storage_path, exist_ok=True)
+                    self.config["storage_path"] = storage_path
+                    from core.config import save_config
+                    save_config(self.config)
+                except Exception:
+                    pass
+
         # Check if database exists and admin is created
         needs_setup = not is_setup_done or not storage_path or not os.path.exists(storage_path)
 
@@ -39,7 +53,10 @@ class ApplicationController:
             self.show_login()
 
     def show_setup_wizard(self):
-        self.current_window = SetupWizard(on_complete_callback=self.show_login)
+        self.current_window = SetupWizard(
+            on_complete_callback=self.show_login,
+            on_demo_callback=self.show_main_app
+        )
         self.current_window.mainloop()
 
     def show_login(self):

@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 from pathlib import Path
 
@@ -28,8 +29,12 @@ COLOR_WARNING = "#F59E0B"        # Amber Warning (Duplicate / UTR alert)
 COLOR_DANGER = "#EF4444"         # Red Flag (Pending Activation)
 COLOR_INFO = "#0284C7"           # Informational Blue
 
-# Default Config File (lives next to the app executable/script)
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Determine persistent Base Directory (next to .exe when packaged, or workspace when source)
+if getattr(sys, 'frozen', False):
+    BASE_DIR = Path(sys.executable).resolve().parent
+else:
+    BASE_DIR = Path(__file__).resolve().parent.parent
+
 CONFIG_FILE = BASE_DIR / "app_config.json"
 
 DEFAULT_COURSES = [
@@ -62,22 +67,39 @@ def load_config():
                 return json.load(f)
         except Exception:
             pass
+
+    # If not found next to executable, check bundled copy in PyInstaller
+    if getattr(sys, 'frozen', False):
+        try:
+            bundled_cfg = Path(getattr(sys, '_MEIPASS', '')) / "app_config.json"
+            if bundled_cfg.exists():
+                with open(bundled_cfg, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                    # Persist next to executable
+                    try:
+                        save_config(cfg)
+                    except Exception:
+                        pass
+                    return cfg
+        except Exception:
+            pass
+
     return {
-        "is_setup_completed": False,
-        "storage_path": "",
+        "is_setup_completed": True,
+        "storage_path": "D:/APNA_RMS_DATA" if os.path.exists("D:\\") else str(Path.home() / "APNA_RMS_DATA"),
         "institute_name": "APNA COMPUTER",
         "institute_tagline": "कंप्यूटर और कौशल प्रशिक्षण संस्थान",
-        "institute_phone": "",
-        "institute_email": "",
+        "institute_phone": "8504985149",
+        "institute_email": "krishnaskb143@gmail.com",
         "institute_address": "",
-        "logo_path": str(BASE_DIR / "Logo.png"),
+        "logo_path": "",
         "theme": "dark",
         "language": "hi",
         "smtp_server": "smtp.gmail.com",
         "smtp_port": 587,
-        "smtp_email": "",
+        "smtp_email": "krishnaskb143@gmail.com",
         "smtp_password": "",
-        "admin_backup_email": "",
+        "admin_backup_email": "krishnaskb143@gmail.com",
         "youtube_link": "",
         "instagram_link": "",
         "telegram_link": ""

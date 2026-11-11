@@ -12,12 +12,13 @@ from core.database import DatabaseManager
 from core.auth import AuthManager
 
 class SetupWizard(ctk.CTk):
-    def __init__(self, on_complete_callback):
+    def __init__(self, on_complete_callback, on_demo_callback=None):
         super().__init__()
         self.on_complete_callback = on_complete_callback
+        self.on_demo_callback = on_demo_callback
         self.title(f"{APP_NAME} - Initial Setup Wizard (प्रारंभिक सेटअप)")
-        self.geometry("820x650")
-        self.minsize(780, 600)
+        self.geometry("840x700")
+        self.minsize(800, 650)
         ctk.set_appearance_mode("dark")
 
         self.storage_path = ""
@@ -48,9 +49,48 @@ class SetupWizard(ctk.CTk):
         )
         subtitle.pack(anchor="w", padx=24, pady=(0, 14))
 
+        # --- 1-CLICK INSTANT DEMO BANNER (Zero Form Filling) ---
+        demo_card = ctk.CTkFrame(
+            self,
+            fg_color="#064E3B",
+            corner_radius=12,
+            border_width=2,
+            border_color="#10B981"
+        )
+        demo_card.pack(fill="x", padx=24, pady=(12, 0))
+
+        dc_left = ctk.CTkFrame(demo_card, fg_color="transparent")
+        dc_left.pack(side="left", padx=16, pady=10)
+
+        ctk.CTkLabel(
+            dc_left,
+            text="🌟 केवल सॉफ्टवेयर का डेमो देखना है? बिना किसी फॉर्म भरे तुरंत शुरू करें!",
+            font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
+            text_color="#A7F3D0"
+        ).pack(anchor="w")
+
+        ctk.CTkLabel(
+            dc_left,
+            text="1-क्लिक में 10 सैंपल छात्र, फीस रसीदें, टाइम-टेबल, स्टाफ और पूरा P&L डैशबोर्ड लाइव लोड हो जाएगा।",
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            text_color="#D1FAE5"
+        ).pack(anchor="w")
+
+        btn_demo = ctk.CTkButton(
+            demo_card,
+            text="🎮 1-क्लिक लाइव डेमो (Explore Live Demo)",
+            height=40,
+            fg_color="#10B981",
+            hover_color="#059669",
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
+            command=self.launch_instant_demo
+        )
+        btn_demo.pack(side="right", padx=16, pady=10)
+
         # Main Scrollable Form Container
         self.container = ctk.CTkScrollableFrame(self, fg_color="transparent")
-        self.container.pack(fill="both", expand=True, padx=24, pady=16)
+        self.container.pack(fill="both", expand=True, padx=24, pady=12)
 
         # --- STEP 1: Custom Storage Directory (No Forced C: Drive) ---
         step1_card = ctk.CTkFrame(self.container, fg_color=COLOR_NAVY_SURFACE, corner_radius=12, border_width=1, border_color=COLOR_NAVY_BORDER)
@@ -259,3 +299,31 @@ class SetupWizard(ctk.CTk):
             self.on_complete_callback()
         except Exception as e:
             self.error_label.configure(text=f"सेटअप एरर: {str(e)}")
+
+    def launch_instant_demo(self):
+        """Instant demo bypass: seeds sample database and launches main app immediately as demo user."""
+        try:
+            if os.path.exists("D:\\"):
+                demo_dir = Path("D:\\APNA_RMS_DATA")
+            else:
+                demo_dir = Path.home() / "APNA_RMS_DATA"
+            demo_dir.mkdir(parents=True, exist_ok=True)
+
+            config = load_config()
+            config["is_setup_completed"] = True
+            config["storage_path"] = str(demo_dir)
+            save_config(config)
+
+            db = DatabaseManager.get_instance(str(demo_dir / "apna_records.db"))
+            AuthManager.ensure_default_staff_roles()
+            db.reset_to_demo_data()
+
+            demo_user = AuthManager.get_demo_user()
+
+            self.destroy()
+            if self.on_demo_callback:
+                self.on_demo_callback(demo_user)
+            else:
+                self.on_complete_callback()
+        except Exception as e:
+            self.error_label.configure(text=f"डेमो एरर: {str(e)}")
