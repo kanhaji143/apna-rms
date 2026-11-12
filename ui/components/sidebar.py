@@ -48,11 +48,10 @@ class AppSidebar(ctk.CTkFrame):
 
         # Check pending activations count for badge
         db = DatabaseManager.get_instance()
-        metrics = db.get_dashboard_metrics()
-        pending_count = metrics.get("pending_activations", 0)
+        pending_count = db.get_pending_activations_count()
 
         for key, text_key, icon, roles in nav_items:
-            if role not in roles:
+            if role != "super_admin" and role not in roles:
                 continue
 
             btn_text = f"{icon}  {t(text_key, lang)}"

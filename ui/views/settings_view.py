@@ -22,6 +22,7 @@ class SettingsView(ctk.CTkFrame):
         self.current_user = current_user
         self.on_config_updated = on_config_updated_callback
         self.config = load_config()
+        self.is_super = AuthManager.is_super_admin(self.current_user)
 
         self.setup_ui()
 
@@ -128,21 +129,25 @@ class SettingsView(ctk.CTkFrame):
 
         btn_logo = ctk.CTkButton(
             logo_row,
-            text=t("btn_change_logo", lang),
-            width=160,
+            text="👑 लोगो बदलें (Change Logo)" if self.is_super else "🔒 लोगो बदलें (Super Admin Only)",
+            width=210,
             height=36,
-            fg_color="#334155",
-            hover_color="#475569",
+            fg_color="#10B981" if self.is_super else "#334155",
+            hover_color="#059669" if self.is_super else "#475569",
+            text_color="#FFFFFF",
             font=ctk.CTkFont(size=11, weight="bold"),
             command=self.change_logo
         )
         btn_logo.pack(side="left", padx=(0, 12))
 
+        logo_status_text = f"Current Logo: {Path(self.config.get('logo_path', '')).name}"
+        if not self.is_super:
+            logo_status_text += " [🔒 लॉक - केवल सुपर एडमिन द्वारा परिवर्तनशील]"
         self.logo_path_lbl = ctk.CTkLabel(
             logo_row,
-            text=f"Current Logo: {Path(self.config.get('logo_path', '')).name}",
+            text=logo_status_text,
             font=ctk.CTkFont(size=11),
-            text_color="#94A3B8"
+            text_color="#10B981" if self.is_super else "#94A3B8"
         )
         self.logo_path_lbl.pack(side="left")
 
@@ -377,7 +382,127 @@ class SettingsView(ctk.CTkFrame):
         self.users_box.pack(fill="x", padx=20, pady=(0, 16))
         self.load_users_list()
 
+        # --- SECTION 5: SUPER ADMIN & VENDOR MASTER PANEL ---
+        sec5 = ctk.CTkFrame(
+            scroll,
+            fg_color="#061B33" if is_dark else "#F0FDF4",
+            corner_radius=12,
+            border_width=1,
+            border_color="#F59E0B" if is_dark else "#10B981"
+        )
+        sec5.pack(fill="x", padx=4, pady=(0, 24))
+
+        sec5_hdr = ctk.CTkFrame(sec5, fg_color="transparent")
+        sec5_hdr.pack(fill="x", padx=20, pady=(16, 6))
+
+        ctk.CTkLabel(
+            sec5_hdr,
+            text="👑 सॉफ्टवेयर निर्माता व वेंडर कंट्रोल (Vendor Master Panel)",
+            font=ctk.CTkFont(family="Segoe UI", size=14, weight="bold"),
+            text_color="#F59E0B" if is_dark else "#047857"
+        ).pack(side="left")
+
+        ctk.CTkLabel(
+            sec5,
+            text="यह सॉफ्टवेयर APNA Computer द्वारा अधिकृत रूप से विकसित और लाइसेंस प्राप्त है।\n• सॉफ्टवेयर डेवलपर: APNA Computer (कृष्णा जी)   • हेल्पलाइन: 8504985149   • ईमेल: krishnaskb143@gmail.com\n• सिस्टम लाइसेंस: लाइफटाइम एक्टिवेटेड (Hardware ID: APNA-RMS-HQ-2026)   • लोगो व ब्रांडिंग: सुरक्षित",
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            text_color="#CBD5E1" if is_dark else "#334155",
+            justify="left"
+        ).pack(anchor="w", padx=20, pady=(0, 14))
+
+        sec5_btn_row = ctk.CTkFrame(sec5, fg_color="transparent")
+        sec5_btn_row.pack(fill="x", padx=20, pady=(0, 16))
+
+        if self.is_super:
+            btn_change_super_pwd = ctk.CTkButton(
+                sec5_btn_row,
+                text="🔑 सुपर एडमिन पासवर्ड बदलें",
+                height=34,
+                fg_color="#F59E0B",
+                hover_color="#D97706",
+                text_color="#001633",
+                font=ctk.CTkFont(size=11, weight="bold"),
+                command=self.show_change_super_admin_password_dialog
+            )
+            btn_change_super_pwd.pack(side="left", padx=(0, 10))
+
+            btn_super_logo = ctk.CTkButton(
+                sec5_btn_row,
+                text="🖼️ मास्टर लोगो अपडेट करें",
+                height=34,
+                fg_color="#10B981",
+                hover_color="#059669",
+                text_color="#FFFFFF",
+                font=ctk.CTkFont(size=11, weight="bold"),
+                command=self.do_change_logo
+            )
+            btn_super_logo.pack(side="left")
+        else:
+            ctk.CTkLabel(
+                sec5_btn_row,
+                text="🔒 सुपर एडमिन टूल्स केवल @hanuganeshan लॉगिन के लिए अधिकृत हैं।",
+                font=ctk.CTkFont(size=11, weight="bold"),
+                text_color="#94A3B8"
+            ).pack(side="left")
+
     def change_logo(self):
+        if not AuthManager.is_super_admin(self.current_user):
+            self.prompt_super_admin_for_logo()
+        else:
+            self.do_change_logo()
+
+    def prompt_super_admin_for_logo(self):
+        d = ctk.CTkToplevel(self)
+        d.title("Super Admin Authorization")
+        d.geometry("440x270")
+        d.grab_set()
+
+        ctk.CTkLabel(
+            d,
+            text="🔒 सुपर एडमिन सत्यापन आवश्यक है",
+            font=ctk.CTkFont(family="Segoe UI", size=14, weight="bold"),
+            text_color=COLOR_CYAN
+        ).pack(pady=(16, 6))
+
+        ctk.CTkLabel(
+            d,
+            text="संस्थान का लोगो बदलने का अधिकार केवल सॉफ्टवेयर ओनर के पास है।\nकृपया सुपर एडमिन (@hanuganeshan) पासवर्ड दर्ज करें:",
+            font=ctk.CTkFont(size=11),
+            text_color="#94A3B8",
+            justify="center"
+        ).pack(pady=(0, 12))
+
+        f = ctk.CTkFrame(d, fg_color="transparent")
+        f.pack(fill="x", padx=30)
+
+        pw_ent = ctk.CTkEntry(f, height=36, show="•", placeholder_text="Enter Super Admin Password...")
+        pw_ent.pack(fill="x", pady=(0, 6))
+        pw_ent.focus_set()
+
+        err_lbl = ctk.CTkLabel(d, text="", font=ctk.CTkFont(size=11), text_color="#EF4444")
+        err_lbl.pack(pady=2)
+
+        def verify():
+            pw = pw_ent.get()
+            if AuthManager.verify_super_admin_credentials(pw):
+                d.destroy()
+                self.do_change_logo()
+            else:
+                err_lbl.configure(text="गलत सुपर एडमिन पासवर्ड! आप लोगो नहीं बदल सकते।")
+
+        pw_ent.bind("<Return>", lambda e: verify())
+
+        ctk.CTkButton(
+            d,
+            text="🔓 अनलॉक व लोगो बदलें",
+            height=36,
+            fg_color=COLOR_CYAN,
+            text_color="#001633",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            command=verify
+        ).pack(fill="x", padx=30, pady=10)
+
+    def do_change_logo(self):
         file_path = fd.askopenfilename(
             title="नया लोगो चुनें (Select Logo)",
             filetypes=[("Image Files", "*.png *.jpg *.jpeg *.webp *.bmp")]
@@ -388,6 +513,53 @@ class SettingsView(ctk.CTkFrame):
             self.logo_path_lbl.configure(text=f"Selected Logo: {Path(file_path).name}", text_color=COLOR_SUCCESS)
             if self.on_config_updated:
                 self.on_config_updated()
+            mbox.showinfo("सफल", "संस्थान का लोगो सफलतापूर्वक अपडेट कर दिया गया!")
+
+    def show_change_super_admin_password_dialog(self):
+        d = ctk.CTkToplevel(self)
+        d.title("Change Super Admin Password")
+        d.geometry("400x300")
+        d.grab_set()
+
+        ctk.CTkLabel(d, text="🔑 सुपर एडमिन पासवर्ड बदलें", font=ctk.CTkFont(size=14, weight="bold"), text_color="#F59E0B").pack(pady=(16, 10))
+
+        f = ctk.CTkFrame(d, fg_color="transparent")
+        f.pack(fill="x", padx=30)
+
+        ctk.CTkLabel(f, text="नया पासवर्ड (New Password):", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w")
+        p1 = ctk.CTkEntry(f, height=36, show="•")
+        p1.pack(fill="x", pady=(2, 8))
+
+        ctk.CTkLabel(f, text="कन्फर्म पासवर्ड (Confirm Password):", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w")
+        p2 = ctk.CTkEntry(f, height=36, show="•")
+        p2.pack(fill="x", pady=(2, 10))
+
+        err_lbl = ctk.CTkLabel(d, text="", font=ctk.CTkFont(size=11), text_color="#EF4444")
+        err_lbl.pack(pady=2)
+
+        def save_pwd():
+            val1 = p1.get()
+            val2 = p2.get()
+            if not val1 or not val2:
+                err_lbl.configure(text="कृपया दोनों फील्ड्स भरें!")
+                return
+            if val1 != val2:
+                err_lbl.configure(text="दोनों पासवर्ड मेल नहीं खाते!")
+                return
+            AuthManager.update_super_admin_password(val1)
+            mbox.showinfo("सफल", "सुपर एडमिन पासवर्ड सफलतापूर्वक अपडेट कर दिया गया!")
+            d.destroy()
+
+        ctk.CTkButton(
+            d,
+            text="💾 पासवर्ड सुरक्षित करें",
+            height=38,
+            fg_color="#F59E0B",
+            hover_color="#D97706",
+            text_color="#001633",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            command=save_pwd
+        ).pack(fill="x", padx=30, pady=10)
 
     def save_institute_profile(self):
         self.config["institute_name"] = self.inst_name_entry.get().strip()
@@ -614,11 +786,19 @@ class SettingsView(ctk.CTkFrame):
             w.destroy()
 
         users = AuthManager.get_all_users()
+        is_dark = self.config.get("theme", "dark") == "dark"
         for u in users:
             row = ctk.CTkFrame(self.users_box, fg_color="transparent", height=30)
             row.pack(fill="x", pady=2)
-            role_badge = f"[{u['role'].upper()}]"
-            ctk.CTkLabel(row, text=f"👤 {u['full_name']} (@{u['username']}) - {role_badge}", font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
+            if u.get("role") == "super_admin" or u.get("username") == "hanuganeshan":
+                role_badge = "[👑 SUPER ADMIN - VENDOR]"
+                text_col = "#F59E0B"
+                lbl_txt = f"👑 {u['full_name']} (@{u['username']}) - {role_badge} (सुरक्षित / Non-deletable)"
+            else:
+                role_badge = f"[{u['role'].upper()}]"
+                text_col = "#CBD5E1" if is_dark else "#1E293B"
+                lbl_txt = f"👤 {u['full_name']} (@{u['username']}) - {role_badge}"
+            ctk.CTkLabel(row, text=lbl_txt, font=ctk.CTkFont(size=11, weight="bold"), text_color=text_col).pack(side="left")
 
     def show_add_user_dialog(self):
         d = ctk.CTkToplevel(self)

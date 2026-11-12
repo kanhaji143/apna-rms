@@ -156,17 +156,32 @@ class AppHeader(ctk.CTkFrame):
         self.btn_en.pack(side="left", padx=2, pady=2)
 
         # User Badge
-        role_title = self.current_user.get("role", "Staff").capitalize()
+        role_raw = self.current_user.get("role", "staff").lower()
+        is_super = role_raw == "super_admin" or self.current_user.get("username") == "hanuganeshan"
         user_name = self.current_user.get("full_name", self.current_user.get("username", "User"))
-        user_card = ctk.CTkFrame(right_frame, fg_color=COLOR_NAVY_CARD if is_dark else COLOR_LIGHT_CARD, corner_radius=10)
+
+        user_card = ctk.CTkFrame(
+            right_frame,
+            fg_color="#0F2942" if is_super else (COLOR_NAVY_CARD if is_dark else COLOR_LIGHT_CARD),
+            corner_radius=10,
+            border_width=1 if is_super else 0,
+            border_color="#F59E0B" if is_super else "transparent"
+        )
         user_card.pack(side="left", padx=10, pady=12)
 
-        user_text = f"👤 {user_name} ({role_title})"
+        if is_super:
+            user_text = f"👑 {user_name} [SUPER ADMIN]"
+            text_col = "#FDE68A" if is_dark else "#B45309"
+        else:
+            role_title = role_raw.capitalize()
+            user_text = f"👤 {user_name} ({role_title})"
+            text_col = COLOR_TEXT_LIGHT if is_dark else COLOR_TEXT_DARK
+
         self.user_lbl = ctk.CTkLabel(
             user_card,
             text=user_text,
             font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
-            text_color=COLOR_TEXT_LIGHT if is_dark else COLOR_TEXT_DARK
+            text_color=text_col
         )
         self.user_lbl.pack(padx=10, pady=4)
 

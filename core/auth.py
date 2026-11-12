@@ -112,6 +112,29 @@ class AuthManager:
             return False, "User not found! / यूज़र नहीं मिला!"
 
     @classmethod
+    def is_super_admin(cls, user) -> bool:
+        if not user:
+            return False
+        return user.get("role") == "super_admin" or user.get("username", "").lower() == "hanuganeshan"
+
+    @classmethod
+    def verify_super_admin_credentials(cls, password: str) -> bool:
+        """Verifies if the provided password matches the master super admin account."""
+        user = cls.authenticate("hanuganeshan", password)
+        return user is not None
+
+    @classmethod
+    def update_super_admin_password(cls, new_password: str) -> bool:
+        """Updates super admin password."""
+        db = DatabaseManager.get_instance()
+        pwd_hash = cls.hash_password(new_password)
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET password_hash = ? WHERE username = 'hanuganeshan'", (pwd_hash,))
+            conn.commit()
+            return True
+
+    @classmethod
     def get_all_users(cls):
         db = DatabaseManager.get_instance()
         with db.get_connection() as conn:
@@ -124,7 +147,7 @@ class AuthManager:
         db = DatabaseManager.get_instance()
         with db.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM users WHERE role = 'admin'")
+            cursor.execute("SELECT COUNT(*) FROM users WHERE role IN ('admin', 'super_admin')")
             return cursor.fetchone()[0] > 0
 
     @classmethod
@@ -134,6 +157,20 @@ class AuthManager:
             cursor = conn.cursor()
             cursor.execute("SELECT role FROM users")
             roles = [r[0] for r in cursor.fetchall()]
+
+            # 👑 Super Admin (Master Developer / Vendor Owner)
+            cursor.execute("SELECT username FROM users WHERE username = 'hanuganeshan'")
+            if not cursor.fetchone():
+                pwd_hash = cls.hash_password("Admin@123")
+                cursor.execute("""
+                INSERT INTO users (username, password_hash, role, full_name)
+                VALUES ('hanuganeshan', ?, 'super_admin', '👑 सुपर एडमिन (Software Owner)')
+                """, (pwd_hash,))
+            else:
+                cursor.execute("""
+                UPDATE users SET role = 'super_admin', full_name = '👑 सुपर एडमिन (Software Owner)'
+                WHERE username = 'hanuganeshan'
+                """)
 
             cursor.execute("SELECT username FROM users WHERE username = 'admin'")
             if not cursor.fetchone():
