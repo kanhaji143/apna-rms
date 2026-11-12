@@ -11,25 +11,65 @@ from reportlab.pdfbase.ttfonts import TTFont
 from core.config import load_config
 from core.database import DatabaseManager
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Unicode / Hindi Font Loader
+# Priority: Nirmala UI (NirmalaUI) → Aparajita → Mangal → Utsaah → Helvetica
+# Nirmala.ttf  = Nirmala UI Regular
+# NirmalaB.ttf = Nirmala UI Bold
+# NirmalaS.ttf = Nirmala UI Semilight (used as italic/oblique substitute)
+# ─────────────────────────────────────────────────────────────────────────────
+_HINDI_FONTS_REGISTERED = False
+
+def _register_font_safe(name, path):
+    """Register a TTF font only if not already registered and file exists."""
+    try:
+        if name not in pdfmetrics.getRegisteredFontNames() and os.path.exists(path):
+            pdfmetrics.registerFont(TTFont(name, path))
+            return True
+    except Exception:
+        pass
+    return False
+
 def get_unicode_fonts():
-    reg_font = 'Helvetica'
-    bold_font = 'Helvetica-Bold'
-    oblique_font = 'Helvetica-Oblique'
-    
-    win_nirmala = 'C:/Windows/Fonts/Nirmala.ttf'
-    win_nirmala_b = 'C:/Windows/Fonts/NirmalaB.ttf'
-    if os.path.exists(win_nirmala) and os.path.exists(win_nirmala_b):
-        try:
-            if 'Nirmala' not in pdfmetrics.getRegisteredFontNames():
-                pdfmetrics.registerFont(TTFont('Nirmala', win_nirmala))
-            if 'Nirmala-Bold' not in pdfmetrics.getRegisteredFontNames():
-                pdfmetrics.registerFont(TTFont('Nirmala-Bold', win_nirmala_b))
-            reg_font = 'Nirmala'
-            bold_font = 'Nirmala-Bold'
-            oblique_font = 'Nirmala'
-        except Exception:
-            pass
-    return reg_font, bold_font, oblique_font
+    """
+    Returns (regular_font, bold_font, oblique_font) for use in ReportLab.
+    Tries Nirmala UI first (best Hindi rendering), then Aparajita, then Mangal.
+    Falls back to built-in Helvetica if none available.
+    """
+    global _HINDI_FONTS_REGISTERED
+
+    WIN_FONTS = 'C:/Windows/Fonts/'
+
+    # --- Priority 1: Nirmala UI (best Devanagari rendering on Windows) ---
+    nirmala_reg  = WIN_FONTS + 'Nirmala.ttf'
+    nirmala_bold = WIN_FONTS + 'NirmalaB.ttf'
+    nirmala_semi = WIN_FONTS + 'NirmalaS.ttf'   # SemiLight as italic substitute
+
+    if os.path.exists(nirmala_reg):
+        ok_reg  = _register_font_safe('NirmalaUI',          nirmala_reg)
+        ok_bold = _register_font_safe('NirmalaUI-Bold',     nirmala_bold if os.path.exists(nirmala_bold) else nirmala_reg)
+        ok_semi = _register_font_safe('NirmalaUI-SemiLight', nirmala_semi if os.path.exists(nirmala_semi) else nirmala_reg)
+        if ok_reg:
+            return 'NirmalaUI', 'NirmalaUI-Bold', 'NirmalaUI-SemiLight'
+
+    # --- Priority 2: Aparajita ---
+    aparajita_reg  = WIN_FONTS + 'Aparajita.ttf'
+    aparajita_bold = WIN_FONTS + 'AparajitaBold.ttf'
+    if os.path.exists(aparajita_reg):
+        _register_font_safe('Aparajita',      aparajita_reg)
+        _register_font_safe('Aparajita-Bold', aparajita_bold if os.path.exists(aparajita_bold) else aparajita_reg)
+        return 'Aparajita', 'Aparajita-Bold', 'Aparajita'
+
+    # --- Priority 3: Mangal (older but widely available) ---
+    mangal_reg  = WIN_FONTS + 'mangal.ttf'
+    mangal_bold = WIN_FONTS + 'mangalb.ttf'
+    if os.path.exists(mangal_reg):
+        _register_font_safe('Mangal',      mangal_reg)
+        _register_font_safe('Mangal-Bold', mangal_bold if os.path.exists(mangal_bold) else mangal_reg)
+        return 'Mangal', 'Mangal-Bold', 'Mangal'
+
+    # --- Fallback: built-in Helvetica (no Hindi support but won't crash) ---
+    return 'Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique'
 
 class ReceiptGenerator:
     @staticmethod

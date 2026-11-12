@@ -67,6 +67,8 @@ class LoginWindow(ctk.CTk):
             font=ctk.CTkFont(size=13)
         )
         self.user_entry.pack(fill="x", pady=(0, 14))
+        # Disable OS autofill by clearing any pre-filled value on startup
+        self.after(100, lambda: self.user_entry.delete(0, "end"))
 
         lbl_pass = ctk.CTkLabel(form_frame, text="पासवर्ड (Password):", font=ctk.CTkFont(size=12, weight="bold"))
         lbl_pass.pack(anchor="w", pady=(0, 4))
