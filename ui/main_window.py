@@ -223,7 +223,7 @@ class MainWindow(ctk.CTk):
             d,
             text="क्या आपने आज की रिपोर्ट व स्क्रीनशॉट्स एडमिन ईमेल पर भेज दिए हैं?\n(Have you sent today's report & backup?)",
             font=ctk.CTkFont(size=11),
-            text_color="#CBD5E1",
+            text_color=("#334155", "#CBD5E1"),
             justify="center"
         ).pack(pady=(0, 16))
 
