@@ -108,10 +108,11 @@ class ReceiptGenerator:
         tagline_style = ParagraphStyle(
             'InstTagline',
             parent=styles['Normal'],
-            fontName=oblique_font,
-            fontSize=9.5,
-            textColor=colors.HexColor("#475569"),
-            leading=13
+            fontName=reg_font,
+            fontSize=10,
+            textColor=colors.HexColor("#334155"),
+            leading=14,
+            spaceAfter=0
         )
         receipt_badge_style = ParagraphStyle(
             'ReceiptBadge',
