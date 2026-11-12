@@ -21,6 +21,7 @@ def build():
         "--version-file=file_version_info.txt",
         "--add-data=Logo.png;.",
         "--add-data=app_config.json;.",
+        "--add-data=fonts;fonts",
         "--add-data=core;core",
         "--add-data=ui;ui",
         "app.py"
