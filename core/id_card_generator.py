@@ -7,11 +7,13 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from core.config import load_config
 from core.database import DatabaseManager
+from core.receipt_generator import get_unicode_fonts
 
 class IDCardGenerator:
     @staticmethod
     def generate_id_card(student_data: dict, output_pdf_path: str):
         config = load_config()
+        reg_font, bold_font, oblique_font = get_unicode_fonts()
         
         # Standard ID Card Size: 250pt x 380pt (Approx 3.5in x 5.2in pocket card)
         card_size = (250, 380)
@@ -38,7 +40,7 @@ class IDCardGenerator:
         
         title_style = ParagraphStyle(
             'IDTitle',
-            fontName='Helvetica-Bold',
+            fontName=bold_font,
             fontSize=11,
             textColor=colors.white,
             alignment=1, # Center
@@ -46,15 +48,15 @@ class IDCardGenerator:
         )
         tag_style = ParagraphStyle(
             'IDTag',
-            fontName='Helvetica',
-            fontSize=6,
+            fontName=reg_font,
+            fontSize=6.5,
             textColor=colors.HexColor("#94A3B8"),
             alignment=1,
-            leading=8
+            leading=8.5
         )
         badge_style = ParagraphStyle(
             'IDBadge',
-            fontName='Helvetica-Bold',
+            fontName=bold_font,
             fontSize=8,
             textColor=brand_navy,
             alignment=1,
@@ -62,7 +64,7 @@ class IDCardGenerator:
         )
         name_style = ParagraphStyle(
             'IDName',
-            fontName='Helvetica-Bold',
+            fontName=bold_font,
             fontSize=11,
             textColor=brand_navy,
             alignment=1,
@@ -70,21 +72,21 @@ class IDCardGenerator:
         )
         label_style = ParagraphStyle(
             'IDLabel',
-            fontName='Helvetica-Bold',
+            fontName=bold_font,
             fontSize=7,
             textColor=colors.HexColor("#64748B"),
             leading=9
         )
         val_style = ParagraphStyle(
             'IDVal',
-            fontName='Helvetica-Bold',
+            fontName=bold_font,
             fontSize=7.5,
             textColor=dark_text,
             leading=9
         )
         footer_style = ParagraphStyle(
             'IDFooter',
-            fontName='Helvetica-Bold',
+            fontName=bold_font,
             fontSize=6,
             textColor=colors.white,
             alignment=1,
