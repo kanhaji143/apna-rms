@@ -160,13 +160,15 @@ class AppHeader(ctk.CTkFrame):
         is_super = role_raw == "super_admin" or self.current_user.get("username") == "hanuganeshan"
         user_name = self.current_user.get("full_name", self.current_user.get("username", "User"))
 
-        user_card = ctk.CTkFrame(
-            right_frame,
-            fg_color="#0F2942" if is_super else (COLOR_NAVY_CARD if is_dark else COLOR_LIGHT_CARD),
-            corner_radius=10,
-            border_width=1 if is_super else 0,
-            border_color="#F59E0B" if is_super else "transparent"
-        )
+        user_card_kwargs = {
+            "fg_color": "#0F2942" if is_super else (COLOR_NAVY_CARD if is_dark else COLOR_LIGHT_CARD),
+            "corner_radius": 10
+        }
+        if is_super:
+            user_card_kwargs["border_width"] = 1
+            user_card_kwargs["border_color"] = "#F59E0B"
+
+        user_card = ctk.CTkFrame(right_frame, **user_card_kwargs)
         user_card.pack(side="left", padx=10, pady=12)
 
         if is_super:
