@@ -426,7 +426,8 @@ class RecordsView(ctk.CTkFrame):
     def print_receipt(self, record):
         db = DatabaseManager.get_instance()
         out_pdf = db.receipts_dir / f"Receipt_{record['admission_no']}.pdf"
-        ReceiptGenerator.generate_fee_receipt(record, str(out_pdf))
+        if not out_pdf.exists() or out_pdf.stat().st_size < 1000:
+            ReceiptGenerator.generate_fee_receipt(record, str(out_pdf))
         os.startfile(str(out_pdf))
 
     def print_id_card(self, record):

@@ -1,6 +1,7 @@
 import os
 import sys
 import base64
+import threading
 from pathlib import Path
 from datetime import datetime
 
@@ -47,7 +48,7 @@ def get_unicode_fonts():
     return 'Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Local Font Cache for Chromium PDF Engine
+# Local Font Cache
 # ─────────────────────────────────────────────────────────────────────────────
 _BASE64_FONT_CACHE = {}
 
@@ -90,7 +91,7 @@ def _get_base64_file(path: str) -> str:
     return ""
 
 # ─────────────────────────────────────────────────────────────────────────────
-# HTML + CSS Receipt Template Builder
+# HTML + CSS Receipt Template Builder with Developer Watermark
 # ─────────────────────────────────────────────────────────────────────────────
 def build_receipt_html(admission_data: dict, config: dict) -> str:
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -174,7 +175,7 @@ def build_receipt_html(admission_data: dict, config: dict) -> str:
     if social_parts:
         social_text = " | ".join(social_parts)
         social_footer_html = f"""
-        <div style="margin-top: 18px; background-color: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 4px; padding: 6px 10px; font-size: 10px; color: #0284C7; text-align: center;">
+        <div style="margin-top: 14px; background-color: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 4px; padding: 6px 10px; font-size: 10px; color: #0284C7; text-align: center;">
             <strong>Follow us for Free Classes & Updates:</strong> {social_text}
         </div>
         """
@@ -245,7 +246,7 @@ def build_receipt_html(admission_data: dict, config: dict) -> str:
 
         @page {{
             size: A4 portrait;
-            margin: 12mm 14mm 12mm 14mm;
+            margin: 12mm 14mm 10mm 14mm;
         }}
 
         * {{
@@ -375,7 +376,7 @@ def build_receipt_html(admission_data: dict, config: dict) -> str:
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-top: 26px;
+            margin-top: 24px;
             padding-top: 6px;
         }}
 
@@ -391,6 +392,16 @@ def build_receipt_html(admission_data: dict, config: dict) -> str:
             text-align: right;
             font-size: 11px;
             color: #00183A;
+        }}
+
+        .developer-watermark {{
+            margin-top: 20px;
+            padding-top: 8px;
+            border-top: 1px dashed #CBD5E1;
+            text-align: center;
+            font-size: 8.5px;
+            color: #64748B;
+            letter-spacing: 0.3px;
         }}
     </style>
 </head>
@@ -499,42 +510,116 @@ def build_receipt_html(admission_data: dict, config: dict) -> str:
 
     {social_footer_html}
 
+    <!-- Developer & Legal Watermark Footer -->
+    <div class="developer-watermark">
+        System Generated Authorized Receipt • Software Developed & Licensed by APNA Computer (कृष्णा जी) | Helpline: 8504985149 | Email: krishnaskb143@gmail.com
+    </div>
+
 </body>
 </html>"""
     return html
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Primary Renderer: Chromium via Playwright
+# High-Performance Persistent Chromium Worker Thread
+# Eliminates 10-20s lag by keeping a warm, persistent Chromium browser
+# All Playwright calls execute inside the dedicated worker thread safely.
 # ─────────────────────────────────────────────────────────────────────────────
-def _render_receipt_with_chromium(html_content: str, output_pdf_path: str):
-    from playwright.sync_api import sync_playwright
+class _ChromiumWorker:
+    _instance = None
+    _lock = threading.Lock()
 
-    os.makedirs(os.path.dirname(os.path.abspath(output_pdf_path)), exist_ok=True)
-    with sync_playwright() as p:
-        browser = None
-        # Try default chromium, then fallback to system msedge or chrome
-        for launch_opt in [{}, {'channel': 'msedge'}, {'channel': 'chrome'}]:
-            try:
-                browser = p.chromium.launch(headless=True, **launch_opt)
-                if browser:
-                    break
-            except Exception:
-                continue
+    def __init__(self):
+        import queue
+        self._task_queue = queue.Queue()
+        self._ready_event = threading.Event()
+        self._thread = threading.Thread(target=self._run_loop, daemon=True, name="ChromiumPDFWorker")
+        self._thread.start()
+        # Wait up to 10s for initial browser startup in background
+        self._ready_event.wait(timeout=10)
 
-        if not browser:
-            raise RuntimeError("Could not launch Chromium or system Edge/Chrome browser!")
-
+    def _run_loop(self):
         try:
-            page = browser.new_page()
-            page.set_content(html_content, wait_until="networkidle")
-            page.pdf(
-                path=output_pdf_path,
-                format="A4",
-                print_background=True,
-                margin={"top": "0mm", "bottom": "0mm", "left": "0mm", "right": "0mm"}
-            )
-        finally:
-            browser.close()
+            from playwright.sync_api import sync_playwright
+            with sync_playwright() as p:
+                launch_args = [
+                    '--disable-gpu',
+                    '--no-sandbox',
+                    '--disable-extensions',
+                    '--disable-background-networking',
+                    '--disable-default-apps',
+                    '--disable-sync',
+                    '--disable-translate'
+                ]
+                browser = None
+                for launch_opt in [
+                    {'args': launch_args},
+                    {'channel': 'msedge', 'args': launch_args},
+                    {'channel': 'chrome', 'args': launch_args}
+                ]:
+                    try:
+                        browser = p.chromium.launch(headless=True, **launch_opt)
+                        if browser:
+                            break
+                    except Exception:
+                        continue
+
+                if not browser:
+                    return
+
+                context = browser.new_context()
+                page = context.new_page()
+                self._ready_event.set()
+
+                while True:
+                    task = self._task_queue.get()
+                    if task is None:
+                        break
+                    html, out_path, result_queue = task
+                    try:
+                        os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
+                        page.set_content(html, wait_until="load")
+                        page.pdf(
+                            path=out_path,
+                            format="A4",
+                            print_background=True,
+                            margin={"top": "0mm", "bottom": "0mm", "left": "0mm", "right": "0mm"}
+                        )
+                        result_queue.put((True, None))
+                    except Exception as e:
+                        result_queue.put((False, e))
+                    finally:
+                        self._task_queue.task_done()
+
+                browser.close()
+        except Exception:
+            pass
+
+    @classmethod
+    def get_instance(cls):
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = cls()
+            return cls._instance
+
+    def render_pdf(self, html_content: str, output_pdf_path: str, timeout: float = 15.0):
+        if not self._ready_event.is_set():
+            raise RuntimeError("Chromium worker not ready or failed to launch.")
+        import queue
+        rq = queue.Queue()
+        self._task_queue.put((html_content, output_pdf_path, rq))
+        success, err = rq.get(timeout=timeout)
+        if not success:
+            raise err
+
+def _warmup_renderer_async():
+    """Background thread to pre-warm Chromium worker so first print is instant."""
+    try:
+        _ChromiumWorker.get_instance()
+    except Exception:
+        pass
+
+# Start background warm-up immediately upon module load
+threading.Thread(target=_warmup_renderer_async, daemon=True).start()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Fallback Renderer: ReportLab (Preserved for safe redundancy)
@@ -662,7 +747,7 @@ def _render_receipt_with_reportlab_fallback(admission_data: dict, output_pdf_pat
 
     elements.append(Spacer(1, 28))
     sig_data = [[
-        Paragraph("<b>Terms & Conditions:</b><br/>1. Fees once paid is non-refundable.<br/>2. Course access credentials are sent to registered email.<br/>3. System generated authorized receipt.", ParagraphStyle('TC', fontName=reg_font, fontSize=8, textColor=colors.HexColor("#64748B"), leading=11)),
+        Paragraph("<b>Terms & Conditions:</b><br/>1. Fees once paid is non-refundable.<br/>2. Course access credentials are sent to registered email.<br/>3. System generated authorized receipt.<br/><br/><font size='7' color='#94A3B8'>System Generated Authorized Receipt • Software Developed & Licensed by APNA Computer (कृष्णा जी) | Helpline: 8504985149</font>", ParagraphStyle('TC', fontName=reg_font, fontSize=8, textColor=colors.HexColor("#64748B"), leading=11)),
         Paragraph("<b>For " + config.get("institute_name", "APNA COMPUTER") + "</b><br/><br/><br/>____________________________<br/><b>Authorized Signatory / Seal</b>", ParagraphStyle('AS', fontName=reg_font, fontSize=9, textColor=brand_navy, alignment=2, leading=13))
     ]]
     sig_table = Table(sig_data, colWidths=[4.2*inch, 2.9*inch])
@@ -679,16 +764,17 @@ class ReceiptGenerator:
     def generate_fee_receipt(admission_data: dict, output_pdf_path: str) -> str:
         config = load_config()
 
-        # Step 1: Attempt Chromium PDF generation with embedded Noto Sans Devanagari
+        # Step 1: High-Speed Persistent Chromium Worker rendering (< 0.5s)
         try:
             html = build_receipt_html(admission_data, config)
-            _render_receipt_with_chromium(html, output_pdf_path)
+            worker = _ChromiumWorker.get_instance()
+            worker.render_pdf(html, output_pdf_path)
             if os.path.exists(output_pdf_path) and os.path.getsize(output_pdf_path) > 1000:
                 return output_pdf_path
         except Exception as e:
             print(f"[ReceiptGenerator] Chromium rendering error: {e}, falling back to ReportLab...")
 
-        # Step 2: Fallback to ReportLab if Chromium fails
+        # Step 2: Fallback to ReportLab if Chromium pool fails
         try:
             _render_receipt_with_reportlab_fallback(admission_data, output_pdf_path)
         except Exception as e:
