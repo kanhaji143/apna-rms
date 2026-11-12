@@ -56,6 +56,11 @@
 
 ---
 
+## 📜 सिस्टम रूल-बुक एवं ट्रबलशूटिंग गाइड (Rulebook & Changelog)
+सॉफ्टवेयर के सभी आर्किटेक्चर नियम, ऐतिहासिक बग्स और उनके स्थायी समाधानों का पूरा विवरण **[SYSTEM_RULEBOOK_AND_TROUBLESHOOTING.md](file:///E:/AI/Boot%20Camp%203.0/Operating%20Software/SYSTEM_RULEBOOK_AND_TROUBLESHOOTING.md)** में सुरक्षित है।
+
+---
+
 ## 🛠️ सिस्टम सेटअप व रन कैसे करें (Quick Start)
 
 ### 1. आवश्यकताएं (Requirements):
