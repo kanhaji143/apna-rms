@@ -534,8 +534,8 @@ class _ChromiumWorker:
         self._ready_event = threading.Event()
         self._thread = threading.Thread(target=self._run_loop, daemon=True, name="ChromiumPDFWorker")
         self._thread.start()
-        # Wait up to 10s for initial browser startup in background
-        self._ready_event.wait(timeout=10)
+        # Wait up to 15s for initial browser startup on first on-demand creation
+        self._ready_event.wait(timeout=15)
 
     def _run_loop(self):
         try:
@@ -601,9 +601,10 @@ class _ChromiumWorker:
                 cls._instance = cls()
             return cls._instance
 
-    def render_pdf(self, html_content: str, output_pdf_path: str, timeout: float = 15.0):
+    def render_pdf(self, html_content: str, output_pdf_path: str, timeout: float = 20.0):
         if not self._ready_event.is_set():
-            raise RuntimeError("Chromium worker not ready or failed to launch.")
+            if not self._ready_event.wait(timeout=timeout):
+                raise RuntimeError("Chromium worker not ready or failed to launch within timeout.")
         import queue
         rq = queue.Queue()
         self._task_queue.put((html_content, output_pdf_path, rq))
@@ -611,15 +612,9 @@ class _ChromiumWorker:
         if not success:
             raise err
 
-def _warmup_renderer_async():
-    """Background thread to pre-warm Chromium worker so first print is instant."""
-    try:
-        _ChromiumWorker.get_instance()
-    except Exception:
-        pass
-
-# Start background warm-up immediately upon module load
-threading.Thread(target=_warmup_renderer_async, daemon=True).start()
+# Note: Chromium is strictly lazy-loaded on demand via _ChromiumWorker.get_instance()
+# inside ReceiptGenerator.generate_fee_receipt(). App startup, Dashboard, and other
+# views do NOT launch Chromium, saving memory and eliminating startup contention.
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Fallback Renderer: ReportLab (Preserved for safe redundancy)
