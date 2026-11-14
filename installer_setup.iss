@@ -19,7 +19,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-OutputDir=installer_output
+OutputDir=dist
 OutputBaseFilename=APNA_Computer_RMS_Setup
 SetupIconFile=app_icon.ico
 Compression=lzma2/ultra64
@@ -37,15 +37,15 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ; Main Executable and Internals
-Source: "dist\APNA_Computer_RMS_Portable\APNA_Computer_RMS_Portable.exe"; DestDir: "{app}"; DestName: "APNA_Computer_RMS.exe"; Flags: ignoreversion
-Source: "dist\APNA_Computer_RMS_Portable\_internal\*"; DestDir: "{app}\_internal"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "build\app_binaries\APNA_Computer_RMS_Portable.exe"; DestDir: "{app}"; DestName: "APNA_Computer_RMS.exe"; Flags: ignoreversion
+Source: "build\app_binaries\_internal\*"; DestDir: "{app}\_internal"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "app_config.json"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\LOGIN_DETAILS.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\SYSTEM_RULEBOOK_AND_TROUBLESHOOTING.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\ANTIVIRUS_AND_CLIENT_DEPLOYMENT_GUIDE.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\APNA_Computer_RMS_Training_Manual.pdf"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\APNA_Computer_RMS_Sales_Pitch_Guide.pdf"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\APNA_Computer_RMS_Development_Chat_History.pdf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\Documentation\LOGIN_DETAILS.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\Documentation\SYSTEM_RULEBOOK_AND_TROUBLESHOOTING.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\Documentation\ANTIVIRUS_AND_CLIENT_DEPLOYMENT_GUIDE.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\Documentation\APNA_Computer_RMS_Training_Manual.pdf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\Documentation\APNA_Computer_RMS_Sales_Pitch_Guide.pdf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\Documentation\APNA_Computer_RMS_Development_Chat_History.pdf"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
