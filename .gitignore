@@ -26,3 +26,5 @@ env/
 dist/APNA_Computer_RMS_Portable/
 
 installer_output/
+
+*.rar
