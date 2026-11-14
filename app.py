@@ -36,6 +36,12 @@ class ApplicationController:
                 except Exception:
                     pass
 
+            # Trigger DatabaseManager to perform Self-Healing check and restore from Shadow Vault if folder was deleted!
+            try:
+                DatabaseManager.get_instance()
+            except Exception:
+                pass
+
         # Check if database exists and admin is created
         needs_setup = not is_setup_done or not storage_path or not os.path.exists(storage_path)
 

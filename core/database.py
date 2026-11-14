@@ -11,28 +11,151 @@ class DatabaseManager:
     _instance = None
 
     def __init__(self, db_path=None):
+        # 1. Establish Shadow Vault (Hidden system-protected mirror)
+        self.vault_dir = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "APNA_Computer_RMS" / "vault"
+        try:
+            self.vault_dir.mkdir(parents=True, exist_ok=True)
+            if os.name == 'nt':
+                import subprocess
+                subprocess.run(['attrib', '+h', str(self.vault_dir)], capture_output=True, creationflags=0x08000000 if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0)
+        except Exception:
+            pass
+        self.vault_db_path = self.vault_dir / "apna_records_vault.db"
+        self.vault_receipts_dir = self.vault_dir / "receipts"
+        try:
+            self.vault_receipts_dir.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
+
+        # 2. Determine Primary Database Directory
         if db_path is None:
             config = load_config()
             storage_path = config.get("storage_path", "")
-            if storage_path and os.path.exists(storage_path):
+            if storage_path:
                 self.db_dir = Path(storage_path)
             else:
                 self.db_dir = Path(__file__).resolve().parent.parent / "local_storage"
-            self.db_dir.mkdir(parents=True, exist_ok=True)
-            self.screenshots_dir = self.db_dir / "screenshots"
-            self.screenshots_dir.mkdir(parents=True, exist_ok=True)
-            self.receipts_dir = self.db_dir / "receipts"
-            self.receipts_dir.mkdir(parents=True, exist_ok=True)
-            self.db_path = self.db_dir / "apna_records.db"
         else:
             self.db_path = Path(db_path)
             self.db_dir = self.db_path.parent
-            self.screenshots_dir = self.db_dir / "screenshots"
-            self.receipts_dir = self.db_dir / "receipts"
-            self.screenshots_dir.mkdir(parents=True, exist_ok=True)
-            self.receipts_dir.mkdir(parents=True, exist_ok=True)
-        
+
+        try:
+            self.db_dir.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            self.db_dir = Path.home() / "APNA_RMS_DATA"
+            self.db_dir.mkdir(parents=True, exist_ok=True)
+
+        self.screenshots_dir = self.db_dir / "screenshots"
+        self.receipts_dir = self.db_dir / "receipts"
+        self.screenshots_dir.mkdir(parents=True, exist_ok=True)
+        self.receipts_dir.mkdir(parents=True, exist_ok=True)
+        self.db_path = self.db_dir / "apna_records.db"
+
+        # 3. Emergency Self-Healing & Anti-Tamper Check
+        self._perform_self_healing_check()
+
+        # 4. Initialize Database Schema
         self.init_database()
+
+        # 5. Mirror to Shadow Vault
+        self.sync_to_shadow_vault()
+
+    def _perform_self_healing_check(self):
+        """
+        Anti-Tamper & Self-Healing Engine:
+        If the primary database folder or file is deleted, missing, or corrupted,
+        automatically restores all data and receipts from the secure Shadow Vault.
+        """
+        try:
+            primary_exists = self.db_path.exists()
+            primary_size = self.db_path.stat().st_size if primary_exists else 0
+            vault_exists = self.vault_db_path.exists()
+            vault_size = self.vault_db_path.stat().st_size if vault_exists else 0
+
+            needs_restore = False
+            reason = ""
+
+            # Condition 1: Primary DB was deleted or is an empty 0-byte file, but vault has valid data
+            if (not primary_exists or primary_size < 1000) and (vault_exists and vault_size >= 1000):
+                needs_restore = True
+                reason = "Primary database file was missing or deleted"
+
+            # Condition 2: Primary DB exists but fails SQLite integrity check
+            elif primary_exists and primary_size >= 1000:
+                try:
+                    conn = sqlite3.connect(str(self.db_path), timeout=5.0)
+                    cur = conn.cursor()
+                    cur.execute("PRAGMA integrity_check")
+                    res = cur.fetchone()
+                    conn.close()
+                    if not res or res[0] != "ok":
+                        if vault_exists and vault_size >= 1000:
+                            needs_restore = True
+                            reason = f"Database corrupted: {res[0] if res else 'Unknown'}"
+                except Exception as e:
+                    if vault_exists and vault_size >= 1000:
+                        needs_restore = True
+                        reason = f"Database integrity check failed: {e}"
+
+            if needs_restore:
+                print(f"[SECURITY ALERT] Self-Healing Triggered: {reason}. Restoring from Shadow Vault...")
+                self.db_dir.mkdir(parents=True, exist_ok=True)
+                self.receipts_dir.mkdir(parents=True, exist_ok=True)
+                self.screenshots_dir.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(self.vault_db_path, self.db_path)
+
+                # Restore receipts
+                if self.vault_receipts_dir.exists():
+                    for pdf_file in self.vault_receipts_dir.glob("*.pdf"):
+                        target_pdf = self.receipts_dir / pdf_file.name
+                        if not target_pdf.exists() or target_pdf.stat().st_size < 1000:
+                            try:
+                                shutil.copy2(pdf_file, target_pdf)
+                            except Exception:
+                                pass
+
+                # Write emergency recovery log
+                try:
+                    log_file = self.db_dir / "SECURITY_RECOVERY_LOG.txt"
+                    with open(log_file, "a", encoding="utf-8") as lf:
+                        lf.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] EMERGENCY SELF-HEALING: {reason}. All data restored successfully from Shadow Vault.\n")
+                except Exception:
+                    pass
+
+        except Exception as e:
+            print(f"[SECURITY] Self-healing check error: {e}")
+
+    def sync_to_shadow_vault(self):
+        """
+        Silently mirrors the primary database and new receipts to the secure Shadow Vault.
+        Uses SQLite online backup API to ensure 100% zero-lock consistency.
+        """
+        try:
+            if not self.db_path.exists() or self.db_path.stat().st_size < 1000:
+                return
+
+            self.vault_dir.mkdir(parents=True, exist_ok=True)
+            self.vault_receipts_dir.mkdir(parents=True, exist_ok=True)
+
+            # Live atomic SQLite backup
+            src_conn = sqlite3.connect(str(self.db_path), timeout=10.0)
+            dst_conn = sqlite3.connect(str(self.vault_db_path), timeout=10.0)
+            with dst_conn:
+                src_conn.backup(dst_conn, pages=100)
+            dst_conn.close()
+            src_conn.close()
+
+            # Mirror receipts to vault
+            if self.receipts_dir.exists():
+                for pdf_file in self.receipts_dir.glob("*.pdf"):
+                    vault_pdf = self.vault_receipts_dir / pdf_file.name
+                    if not vault_pdf.exists() or vault_pdf.stat().st_size != pdf_file.stat().st_size:
+                        try:
+                            shutil.copy2(pdf_file, vault_pdf)
+                        except Exception:
+                            pass
+        except Exception:
+            pass
 
     @classmethod
     def get_instance(cls, custom_path=None):
@@ -309,7 +432,9 @@ class DatabaseManager:
                 data.get("notes", "")
             ))
             conn.commit()
-            return cursor.lastrowid
+            last_id = cursor.lastrowid
+        self.sync_to_shadow_vault()
+        return last_id
 
     def get_admissions(self, status=None, start_date=None, end_date=None, search_query=None):
         with self.get_connection() as conn:
@@ -419,7 +544,9 @@ class DatabaseManager:
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (teacher_name, subject, day_of_week, start_time, end_time, room_batch, updated_by))
             conn.commit()
-            return cursor.lastrowid
+            last_id = cursor.lastrowid
+        self.sync_to_shadow_vault()
+        return last_id
 
     def get_timetable(self, day=None):
         with self.get_connection() as conn:
@@ -455,7 +582,9 @@ class DatabaseManager:
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (title, category, amount, payment_mode, expense_date, paid_to, receipt_image_path, recorded_by))
             conn.commit()
-            return cursor.lastrowid
+            last_id = cursor.lastrowid
+        self.sync_to_shadow_vault()
+        return last_id
 
     def get_expenses(self, start_date=None, end_date=None, category=None):
         with self.get_connection() as conn:
@@ -533,8 +662,8 @@ class DatabaseManager:
             new_total = float(adm["final_amount"]) + float(amount)
             cursor.execute("UPDATE admissions SET final_amount = ? WHERE id = ?", (new_total, admission_id))
             conn.commit()
-
-            return True, receipt_no
+        self.sync_to_shadow_vault()
+        return True, receipt_no
 
     def get_installments(self, admission_id):
         with self.get_connection() as conn:
@@ -669,7 +798,9 @@ class DatabaseManager:
             VALUES (?, ?, ?, ?, ?, ?)
             """, (name.strip(), category, designation.strip(), phone.strip(), float(monthly_salary), float(advance_balance)))
             conn.commit()
-            return cursor.lastrowid
+            last_id = cursor.lastrowid
+        self.sync_to_shadow_vault()
+        return last_id
 
     def update_staff_member(self, staff_id, name, category, designation, phone, monthly_salary):
         with self.get_connection() as conn:
