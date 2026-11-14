@@ -11,13 +11,10 @@ class DatabaseManager:
     _instance = None
 
     def __init__(self, db_path=None):
-        # 1. Establish Shadow Vault (Hidden system-protected mirror)
+        # 1. Establish Shadow Vault (Protected system mirror in LocalAppData)
         self.vault_dir = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "APNA_Computer_RMS" / "vault"
         try:
             self.vault_dir.mkdir(parents=True, exist_ok=True)
-            if os.name == 'nt':
-                import subprocess
-                subprocess.run(['attrib', '+h', str(self.vault_dir)], capture_output=True, creationflags=0x08000000 if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0)
         except Exception:
             pass
         self.vault_db_path = self.vault_dir / "apna_records_vault.db"

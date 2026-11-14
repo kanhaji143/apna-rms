@@ -22,3 +22,5 @@ ehthumbs.db
 .venv/
 venv/
 env/
+
+dist/APNA_Computer_RMS_Portable/
