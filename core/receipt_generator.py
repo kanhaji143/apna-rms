@@ -766,16 +766,15 @@ class ReceiptGenerator:
             worker.render_pdf(html, output_pdf_path)
             if os.path.exists(output_pdf_path) and os.path.getsize(output_pdf_path) > 1000:
                 # Mirror generated receipt to secure Shadow Vault
-        try:
-            from core.database import DatabaseManager
-            db = DatabaseManager.get_instance()
-            if hasattr(db, 'vault_receipts_dir') and db.vault_receipts_dir.exists() and os.path.exists(output_pdf_path):
-                import shutil
-                shutil.copy2(output_pdf_path, db.vault_receipts_dir / os.path.basename(output_pdf_path))
-        except Exception:
-            pass
-
-        return output_pdf_path
+                try:
+                    from core.database import DatabaseManager
+                    db = DatabaseManager.get_instance()
+                    if hasattr(db, 'vault_receipts_dir') and db.vault_receipts_dir.exists() and os.path.exists(output_pdf_path):
+                        import shutil
+                        shutil.copy2(output_pdf_path, db.vault_receipts_dir / os.path.basename(output_pdf_path))
+                except Exception:
+                    pass
+                return output_pdf_path
         except Exception as e:
             print(f"[ReceiptGenerator] Chromium rendering error: {e}, falling back to ReportLab...")
 
