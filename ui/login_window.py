@@ -143,6 +143,16 @@ class LoginWindow(ctk.CTk):
         btn_forgot.pack(pady=(0, 16))
 
     def do_quick_demo(self):
+        try:
+            from core.database import DatabaseManager
+            db = DatabaseManager.get_instance()
+            # If database has 0 students, populate demo data so the demo is lively and functional
+            metrics = db.get_dashboard_metrics()
+            if metrics.get("total_admissions", 0) == 0:
+                db.reset_to_demo_data()
+        except Exception as e:
+            print(f"Demo auto-seed notice: {e}")
+
         user = AuthManager.get_demo_user()
         if not user:
             user = {

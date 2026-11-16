@@ -681,7 +681,10 @@ class DatabaseManager:
             cursor.execute("DELETE FROM expenses")
             cursor.execute("DELETE FROM fee_installments")
             cursor.execute("DELETE FROM audit_logs")
-            cursor.execute("DELETE FROM sqlite_sequence WHERE name IN ('admissions', 'expenses', 'fee_installments', 'audit_logs')")
+            try:
+                cursor.execute("DELETE FROM sqlite_sequence WHERE name IN ('admissions', 'expenses', 'fee_installments', 'audit_logs')")
+            except Exception:
+                pass
             conn.commit()
 
         def create_sample_screenshot(fpath, sname, amt, utr, dt):

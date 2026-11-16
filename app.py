@@ -16,17 +16,27 @@ from ui.main_window import MainWindow
 class ApplicationController:
     def __init__(self):
         self.config = load_config()
-        self.current_window = None
+        self.next_screen = None
+        self.screen_data = None
 
     def start(self):
         is_setup_done = self.config.get("is_setup_completed", False)
         storage_path = self.config.get("storage_path", "")
 
+        # Auto-detect missing drive (e.g. PC has no D: drive) and fallback to C: or User Profile
+        if storage_path:
+            drive = os.path.splitdrive(storage_path)[0]
+            if drive and not os.path.exists(drive + "\\"):
+                storage_path = "C:\\APNA_RMS_DATA" if os.path.exists("C:\\") else str(Path.home() / "APNA_RMS_DATA")
+                self.config["storage_path"] = storage_path
+                from core.config import save_config
+                save_config(self.config)
+
         if is_setup_done and storage_path:
             try:
                 os.makedirs(storage_path, exist_ok=True)
             except Exception:
-                # If configured drive (e.g. D:) does not exist on this machine, fallback to user home directory
+                # If configured drive does not exist on this machine, fallback to user home directory
                 storage_path = str(Path.home() / "APNA_RMS_DATA")
                 try:
                     os.makedirs(storage_path, exist_ok=True)
@@ -53,30 +63,36 @@ class ApplicationController:
             except Exception:
                 needs_setup = True
 
-        if needs_setup:
-            self.show_setup_wizard()
-        else:
-            self.show_login()
+        self.next_screen = "wizard" if needs_setup else "login"
 
-    def show_setup_wizard(self):
-        self.current_window = SetupWizard(
-            on_complete_callback=self.show_login,
-            on_demo_callback=self.show_main_app
-        )
-        self.current_window.mainloop()
+        # Robust State Machine: completely eliminates nested mainloop recursion and timer collision
+        while self.next_screen:
+            target = self.next_screen
+            data = self.screen_data
+            self.next_screen = None
+            self.screen_data = None
 
-    def show_login(self):
-        self.config = load_config()
-        try:
-            AuthManager.ensure_default_staff_roles()
-        except Exception:
-            pass
-        self.current_window = LoginWindow(on_login_success=self.show_main_app)
-        self.current_window.mainloop()
+            if target == "wizard":
+                w = SetupWizard(
+                    on_complete_callback=lambda: self._set_next("login"),
+                    on_demo_callback=lambda u: self._set_next("main", u)
+                )
+                w.mainloop()
+            elif target == "login":
+                self.config = load_config()
+                try:
+                    AuthManager.ensure_default_staff_roles()
+                except Exception:
+                    pass
+                w = LoginWindow(on_login_success=lambda u: self._set_next("main", u))
+                w.mainloop()
+            elif target == "main":
+                w = MainWindow(current_user=data, on_logout_callback=lambda: self._set_next("login"))
+                w.mainloop()
 
-    def show_main_app(self, user):
-        self.current_window = MainWindow(current_user=user, on_logout_callback=self.show_login)
-        self.current_window.mainloop()
+    def _set_next(self, screen, data=None):
+        self.next_screen = screen
+        self.screen_data = data
 
 if __name__ == "__main__":
     app = ApplicationController()

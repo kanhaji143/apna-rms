@@ -35,7 +35,14 @@ if getattr(sys, 'frozen', False):
 else:
     BASE_DIR = Path(__file__).resolve().parent.parent
 
-CONFIG_FILE = BASE_DIR / "app_config.json"
+# User-writable AppData Directory (Prevents permission denied in C:\Program Files)
+APPDATA_DIR = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "APNA_Computer_RMS"
+try:
+    APPDATA_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    pass
+
+CONFIG_FILE = APPDATA_DIR / "app_config.json"
 
 DEFAULT_COURSES = [
     "DCA (Diploma in Computer Applications)",
@@ -68,6 +75,17 @@ def load_config():
         except Exception:
             pass
 
+    # Check template in BASE_DIR (next to .exe)
+    template_cfg = BASE_DIR / "app_config.json"
+    if template_cfg.exists():
+        try:
+            with open(template_cfg, "r", encoding="utf-8") as f:
+                cfg = json.load(f)
+                save_config(cfg)
+                return cfg
+        except Exception:
+            pass
+
     # If not found next to executable, check bundled copy in PyInstaller
     if getattr(sys, 'frozen', False):
         try:
@@ -75,11 +93,7 @@ def load_config():
             if bundled_cfg.exists():
                 with open(bundled_cfg, "r", encoding="utf-8") as f:
                     cfg = json.load(f)
-                    # Persist next to executable
-                    try:
-                        save_config(cfg)
-                    except Exception:
-                        pass
+                    save_config(cfg)
                     return cfg
         except Exception:
             pass

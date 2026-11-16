@@ -305,6 +305,8 @@ class SetupWizard(ctk.CTk):
         try:
             if os.path.exists("D:\\"):
                 demo_dir = Path("D:\\APNA_RMS_DATA")
+            elif os.path.exists("C:\\"):
+                demo_dir = Path("C:\\APNA_RMS_DATA")
             else:
                 demo_dir = Path.home() / "APNA_RMS_DATA"
             demo_dir.mkdir(parents=True, exist_ok=True)
@@ -321,6 +323,13 @@ class SetupWizard(ctk.CTk):
             db.reset_to_demo_data()
 
             demo_user = AuthManager.get_demo_user()
+            if not demo_user:
+                demo_user = {
+                    "id": 9999,
+                    "username": "demo",
+                    "role": "admin",
+                    "full_name": "🌟 लाइव डेमो डायरेक्टर (Demo Mode)"
+                }
 
             self.destroy()
             if self.on_demo_callback:
@@ -328,4 +337,7 @@ class SetupWizard(ctk.CTk):
             else:
                 self.on_complete_callback()
         except Exception as e:
-            self.error_label.configure(text=f"डेमो एरर: {str(e)}")
+            import tkinter.messagebox as mb
+            mb.showerror("Demo Setup Error", f"डेमो लोड करने में समस्या आई:\n{str(e)}")
+            if hasattr(self, "error_label"):
+                self.error_label.configure(text=f"डेमो एरर: {str(e)}")
