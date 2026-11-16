@@ -19,12 +19,6 @@ if (-not $existing) {
     $cert = $existing
 }
 
-# Export public certificate (.cer) to dist/Documentation and dist
-$cerPath = "dist\Documentation\APNA_Computer_Certificate.cer"
-Export-Certificate -Cert $cert -FilePath $cerPath -Force
-Copy-Item $cerPath -Destination "dist\APNA_Computer_Certificate.cer" -Force
-Write-Host "Exported public certificate to $cerPath"
-
 # Digitally sign the Setup executable
 $targetExe = "dist\APNA_Computer_RMS_Setup.exe"
 if (Test-Path $targetExe) {

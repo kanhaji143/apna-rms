@@ -11,6 +11,7 @@ def main():
         "--onedir",
         "--windowed",
         "--noconsole",
+        "--icon=app_icon.ico",
         "--collect-all=customtkinter",
         "--collect-all=playwright",
         "--version-file=file_version_info.txt",
