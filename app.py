@@ -78,6 +78,8 @@ class ApplicationController:
                     on_demo_callback=lambda u: self._set_next("main", u)
                 )
                 w.mainloop()
+                import tkinter
+                tkinter._default_root = None
             elif target == "login":
                 self.config = load_config()
                 try:
@@ -86,9 +88,13 @@ class ApplicationController:
                     pass
                 w = LoginWindow(on_login_success=lambda u: self._set_next("main", u))
                 w.mainloop()
+                import tkinter
+                tkinter._default_root = None
             elif target == "main":
                 w = MainWindow(current_user=data, on_logout_callback=lambda: self._set_next("login"))
                 w.mainloop()
+                import tkinter
+                tkinter._default_root = None
 
     def _set_next(self, screen, data=None):
         self.next_screen = screen
