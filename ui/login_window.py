@@ -7,24 +7,18 @@ from core.config import (
 )
 from core.auth import AuthManager
 
-class LoginWindow(ctk.CTk):
-    def __init__(self, on_login_success):
-        super().__init__()
+class LoginWindow(ctk.CTkFrame):
+    def __init__(self, parent, on_login_success):
+        super().__init__(parent, fg_color="transparent")
+        self.parent = parent
         self.on_login_success = on_login_success
-        self.title(f"{APP_NAME} - User Login")
-        self.geometry("520x620")
-        self.resizable(False, False)
-        ctk.set_appearance_mode("dark")
-
         self.config = load_config()
         self.setup_ui()
 
     def setup_ui(self):
-        self.configure(fg_color=COLOR_NAVY_DARK)
-
-        # Center Card
-        card = ctk.CTkFrame(self, fg_color=COLOR_NAVY_SURFACE, corner_radius=16, border_width=1, border_color=COLOR_NAVY_BORDER)
-        card.pack(fill="both", expand=True, padx=28, pady=28)
+        # Center Card (placed in the center of the viewport for responsive look on any screen)
+        card = ctk.CTkFrame(self, width=460, height=590, fg_color=COLOR_NAVY_SURFACE, corner_radius=16, border_width=1, border_color=COLOR_NAVY_BORDER)
+        card.place(relx=0.5, rely=0.5, anchor="center")
 
         # Logo
         logo_path = self.config.get("logo_path", "")
@@ -153,7 +147,12 @@ class LoginWindow(ctk.CTk):
         except Exception as e:
             print(f"Demo auto-seed notice: {e}")
 
-        user = AuthManager.get_demo_user()
+        try:
+            user = AuthManager.get_demo_user()
+        except Exception as e:
+            print(f"Demo get user notice: {e}")
+            user = None
+
         if not user:
             user = {
                 "id": 9999,
@@ -161,8 +160,8 @@ class LoginWindow(ctk.CTk):
                 "role": "admin",
                 "full_name": "🌟 लाइव डेमो डायरेक्टर (Demo Mode)"
             }
-        self.destroy()
-        self.on_login_success(user)
+        if callable(self.on_login_success):
+            self.on_login_success(user)
 
     def do_login(self):
         username = self.user_entry.get().strip()
@@ -174,8 +173,8 @@ class LoginWindow(ctk.CTk):
 
         user = AuthManager.authenticate(username, password)
         if user:
-            self.destroy()
-            self.on_login_success(user)
+            if callable(self.on_login_success):
+                self.on_login_success(user)
         else:
             self.error_label.configure(text="गलत यूज़रनेम या पासवर्ड! (Invalid Credentials)")
 

@@ -17,34 +17,13 @@ from ui.views.expenses_view import ExpensesView
 from ui.views.reports_view import ReportsView
 from ui.views.settings_view import SettingsView
 
-class MainWindow(ctk.CTk):
-    def __init__(self, current_user, on_logout_callback):
-        super().__init__()
+class MainWindow(ctk.CTkFrame):
+    def __init__(self, parent, current_user, on_logout_callback):
+        super().__init__(parent, fg_color="transparent")
+        self.parent = parent
         self.current_user = current_user
         self.on_logout_callback = on_logout_callback
         self.config = load_config()
-
-        self.title(f"{APP_NAME} - {APP_FULL_NAME}")
-        
-        # Responsive Resolution Adaptation (Fit any Laptop / Desktop)
-        screen_w = self.winfo_screenwidth()
-        screen_h = self.winfo_screenheight()
-        win_w = min(1280, max(850, int(screen_w * 0.94)))
-        win_h = min(800, max(550, int(screen_h * 0.88)))
-        self.geometry(f"{win_w}x{win_h}")
-        self.minsize(800, 480) # Guaranteed to fit even low-res 1366x768 screens with 125% scaling
-
-        # Auto-maximize cleanly so it fits the screen seamlessly on launch
-        try:
-            self.after(100, lambda: self.state('zoomed'))
-        except Exception:
-            pass
-
-        theme = self.config.get("theme", "dark")
-        ctk.set_appearance_mode(theme)
-
-        # Intercept Close Window Event for EOD Mail Safety Check
-        self.protocol("WM_DELETE_WINDOW", self.on_close_app)
 
         self.current_view = None
         self.views_cache = {}
@@ -202,8 +181,8 @@ class MainWindow(ctk.CTk):
         self.navigate_to(current_tab)
 
     def handle_logout(self):
-        self.destroy()
-        self.on_logout_callback()
+        if callable(self.on_logout_callback):
+            self.on_logout_callback()
 
     def on_close_app(self):
         # EOD Backup Safety Prompt
@@ -233,12 +212,17 @@ class MainWindow(ctk.CTk):
         def send_and_exit():
             d.destroy()
             caller = self.current_user.get("full_name", "Staff")
-            MailService.send_daily_eod_report(caller_name=caller)
-            self.destroy()
+            try:
+                MailService.send_daily_eod_report(caller_name=caller)
+            except Exception:
+                pass
+            root = self.winfo_toplevel()
+            root.destroy()
 
         def exit_without_sending():
             d.destroy()
-            self.destroy()
+            root = self.winfo_toplevel()
+            root.destroy()
 
         ctk.CTkButton(
             btn_box,

@@ -11,15 +11,12 @@ from core.config import (
 from core.database import DatabaseManager
 from core.auth import AuthManager
 
-class SetupWizard(ctk.CTk):
-    def __init__(self, on_complete_callback, on_demo_callback=None):
-        super().__init__()
+class SetupWizard(ctk.CTkFrame):
+    def __init__(self, parent, on_complete_callback, on_demo_callback=None):
+        super().__init__(parent, fg_color="transparent")
+        self.parent = parent
         self.on_complete_callback = on_complete_callback
         self.on_demo_callback = on_demo_callback
-        self.title(f"{APP_NAME} - Initial Setup Wizard (प्रारंभिक सेटअप)")
-        self.geometry("840x700")
-        self.minsize(800, 650)
-        ctk.set_appearance_mode("dark")
 
         self.storage_path = ""
         self.generated_master_key = AuthManager.generate_master_recovery_key()
@@ -295,8 +292,8 @@ class SetupWizard(ctk.CTk):
             config["storage_path"] = path
             save_config(config)
 
-            self.destroy()
-            self.on_complete_callback()
+            if callable(self.on_complete_callback):
+                self.on_complete_callback()
         except Exception as e:
             self.error_label.configure(text=f"सेटअप एरर: {str(e)}")
 
@@ -331,10 +328,9 @@ class SetupWizard(ctk.CTk):
                     "full_name": "🌟 लाइव डेमो डायरेक्टर (Demo Mode)"
                 }
 
-            self.destroy()
-            if self.on_demo_callback:
+            if callable(self.on_demo_callback):
                 self.on_demo_callback(demo_user)
-            else:
+            elif callable(self.on_complete_callback):
                 self.on_complete_callback()
         except Exception as e:
             import tkinter.messagebox as mb
