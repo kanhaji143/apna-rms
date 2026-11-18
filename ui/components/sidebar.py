@@ -117,6 +117,20 @@ class AppSidebar(ctk.CTkFrame):
         db = DatabaseManager.get_instance()
         pending = db.get_pending_activations_count()
         lang = self.config.get("language", "hi")
+        is_dark = self.config.get("theme", "dark") == "dark"
+        for k, btn in self.buttons.items():
+            if k == self.active_tab:
+                btn.configure(
+                    fg_color=COLOR_CYAN,
+                    text_color="#001633",
+                    hover_color=COLOR_CYAN_HOVER
+                )
+            else:
+                btn.configure(
+                    fg_color="transparent",
+                    text_color=COLOR_TEXT_LIGHT if is_dark else COLOR_TEXT_DARK,
+                    hover_color=COLOR_NAVY_CARD if is_dark else COLOR_LIGHT_CARD
+                )
         if "activations" in self.buttons:
             text = f"🚩  {t('nav_activations', lang)}"
             if pending > 0:

@@ -61,8 +61,6 @@ class LoginWindow(ctk.CTkFrame):
             font=ctk.CTkFont(size=13)
         )
         self.user_entry.pack(fill="x", pady=(0, 14))
-        # Disable OS autofill by clearing any pre-filled value on startup
-        self.after(100, lambda: self.user_entry.delete(0, "end"))
 
         lbl_pass = ctk.CTkLabel(form_frame, text="पासवर्ड (Password):", font=ctk.CTkFont(size=12, weight="bold"))
         lbl_pass.pack(anchor="w", pady=(0, 4))
@@ -168,15 +166,23 @@ class LoginWindow(ctk.CTkFrame):
         password = self.pass_entry.get()
 
         if not username or not password:
-            self.error_label.configure(text="कृपया यूज़रनेम और पासवर्ड दर्ज करें!")
+            self.error_label.configure(text="कृपया यूज़रनेम और पासवर्ड दोनों दर्ज करें!")
             return
 
-        user = AuthManager.authenticate(username, password)
-        if user:
-            if callable(self.on_login_success):
-                self.on_login_success(user)
-        else:
-            self.error_label.configure(text="गलत यूज़रनेम या पासवर्ड! (Invalid Credentials)")
+        try:
+            # Self-healing: ensure default accounts exist before checking
+            AuthManager.ensure_default_staff_roles()
+            user = AuthManager.authenticate(username, password)
+            if user:
+                self.error_label.configure(text="")
+                if callable(self.on_login_success):
+                    self.on_login_success(user)
+            else:
+                self.error_label.configure(text="गलत यूज़रनेम या पासवर्ड! (Invalid Credentials)")
+                self.pass_entry.delete(0, "end")
+                self.pass_entry.focus()
+        except Exception as e:
+            self.error_label.configure(text=f"लॉगिन एरर: {str(e)}")
 
     def show_recovery_dialog(self):
         dialog = ctk.CTkToplevel(self)

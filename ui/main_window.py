@@ -28,6 +28,7 @@ class MainWindow(ctk.CTkFrame):
         self.current_view = None
         self.views_cache = {}
         self.setup_ui()
+        self.bind_global_shortcuts()
         role = self.current_user.get("role", "caller").lower()
         default_view = "admission" if role == "caller" else "dashboard"
         self.navigate_to(default_view)
@@ -66,45 +67,98 @@ class MainWindow(ctk.CTkFrame):
         self.content_frame = ctk.CTkFrame(self.body_frame, fg_color="transparent", corner_radius=0)
         self.content_frame.pack(side="right", fill="both", expand=True)
 
+    def bind_global_shortcuts(self):
+        try:
+            top = self.winfo_toplevel()
+            role = self.current_user.get("role", "caller").lower()
+
+            # Global Navigation Shortcuts
+            top.bind("<Control-Key-1>", lambda e: self.navigate_to("dashboard") if role in ["admin", "super_admin", "accountant"] else None)
+            top.bind("<Control-Key-2>", lambda e: self.navigate_to("admission"))
+            top.bind("<F2>", lambda e: self.navigate_to("admission"))
+            top.bind("<Control-Key-3>", lambda e: self.navigate_to("records"))
+            top.bind("<Control-Key-4>", lambda e: self.navigate_to("activations"))
+            top.bind("<Control-Key-5>", lambda e: self.navigate_to("timetable"))
+            top.bind("<Control-Key-6>", lambda e: self.navigate_to("staff") if role in ["admin", "super_admin", "accountant"] else None)
+            top.bind("<Control-Key-7>", lambda e: self.navigate_to("expenses") if role in ["admin", "super_admin", "accountant"] else None)
+            top.bind("<Control-Key-8>", lambda e: self.navigate_to("reports") if role in ["admin", "super_admin"] else None)
+            top.bind("<Control-Key-9>", lambda e: self.navigate_to("settings") if role in ["admin", "super_admin"] else None)
+            top.bind("<F5>", lambda e: self.refresh_current_view())
+        except Exception:
+            pass
+
+    def refresh_current_view(self):
+        if self.current_view:
+            if hasattr(self.current_view, "load_records"):
+                self.current_view.load_records()
+            elif hasattr(self.current_view, "load_staff_data"):
+                self.current_view.load_staff_data()
+            elif hasattr(self.current_view, "load_expenses"):
+                self.current_view.load_expenses()
+            elif hasattr(self.current_view, "load_schedule"):
+                self.current_view.load_schedule()
+            elif hasattr(self.current_view, "load_queue"):
+                self.current_view.load_queue()
+        self.sidebar.refresh_badges()
+
     def navigate_to(self, view_name):
         if self.current_view:
             self.current_view.pack_forget()
 
-        if view_name not in self.views_cache:
-            if view_name == "dashboard":
-                self.views_cache[view_name] = DashboardView(self.content_frame, self.current_user, on_navigate=self.navigate_to)
-            elif view_name == "admission":
-                self.views_cache[view_name] = AdmissionView(self.content_frame, self.current_user, on_record_saved_callback=self.on_data_updated)
-            elif view_name == "records":
-                self.views_cache[view_name] = RecordsView(self.content_frame, self.current_user, on_refresh_callback=self.on_data_updated)
-            elif view_name == "activations":
-                self.views_cache[view_name] = ActivationView(self.content_frame, self.current_user, on_refresh_callback=self.on_data_updated)
-            elif view_name == "timetable":
-                self.views_cache[view_name] = TimetableView(self.content_frame, self.current_user)
-            elif view_name == "staff":
-                self.views_cache[view_name] = StaffView(self.content_frame, self.current_user)
-            elif view_name == "expenses":
-                self.views_cache[view_name] = ExpensesView(self.content_frame, self.current_user)
-            elif view_name == "reports":
-                self.views_cache[view_name] = ReportsView(self.content_frame, self.current_user)
-            elif view_name == "settings":
-                self.views_cache[view_name] = SettingsView(self.content_frame, self.current_user, on_config_updated_callback=self.on_config_updated)
+        try:
+            if view_name not in self.views_cache:
+                if view_name == "dashboard":
+                    self.views_cache[view_name] = DashboardView(self.content_frame, self.current_user, on_navigate=self.navigate_to)
+                elif view_name == "admission":
+                    self.views_cache[view_name] = AdmissionView(self.content_frame, self.current_user, on_record_saved_callback=self.on_data_updated)
+                elif view_name == "records":
+                    self.views_cache[view_name] = RecordsView(self.content_frame, self.current_user, on_refresh_callback=self.on_data_updated)
+                elif view_name == "activations":
+                    self.views_cache[view_name] = ActivationView(self.content_frame, self.current_user, on_refresh_callback=self.on_data_updated)
+                elif view_name == "timetable":
+                    self.views_cache[view_name] = TimetableView(self.content_frame, self.current_user)
+                elif view_name == "staff":
+                    self.views_cache[view_name] = StaffView(self.content_frame, self.current_user)
+                elif view_name == "expenses":
+                    self.views_cache[view_name] = ExpensesView(self.content_frame, self.current_user)
+                elif view_name == "reports":
+                    self.views_cache[view_name] = ReportsView(self.content_frame, self.current_user)
+                elif view_name == "settings":
+                    self.views_cache[view_name] = SettingsView(self.content_frame, self.current_user, on_config_updated_callback=self.on_config_updated)
 
-        self.current_view = self.views_cache[view_name]
-        self.current_view.pack(fill="both", expand=True)
+            self.current_view = self.views_cache[view_name]
+            self.current_view.pack(fill="both", expand=True)
 
-        # Lightning fast data reload
-        if hasattr(self.current_view, "load_records"):
-            self.current_view.load_records()
-        elif hasattr(self.current_view, "load_staff_data"):
-            self.current_view.load_staff_data()
-        elif hasattr(self.current_view, "load_queue"):
-            self.current_view.load_queue()
-        elif hasattr(self.current_view, "load_expenses"):
-            self.current_view.load_expenses()
-        elif hasattr(self.current_view, "load_schedule"):
-            self.current_view.load_schedule()
+            # Lightning fast data reload
+            if hasattr(self.current_view, "load_records"):
+                self.current_view.load_records()
+            elif hasattr(self.current_view, "load_staff_data"):
+                self.current_view.load_staff_data()
+            elif hasattr(self.current_view, "load_queue"):
+                self.current_view.load_queue()
+            elif hasattr(self.current_view, "load_expenses"):
+                self.current_view.load_expenses()
+            elif hasattr(self.current_view, "load_schedule"):
+                self.current_view.load_schedule()
 
+        except Exception as e:
+            # Bulletproof: Never leave the viewport blank!
+            err_box = ctk.CTkFrame(self.content_frame, fg_color="transparent")
+            err_box.pack(fill="both", expand=True, padx=40, pady=40)
+            ctk.CTkLabel(err_box, text="⚠️ व्यू लोड करने में समस्या आई", font=ctk.CTkFont(size=18, weight="bold"), text_color="#EF4444").pack(pady=(30, 8))
+            ctk.CTkLabel(err_box, text=f"विवरण (Error): {str(e)}", font=ctk.CTkFont(size=12), text_color="#CBD5E1").pack(pady=4)
+            ctk.CTkButton(
+                err_box,
+                text="📊 डैशबोर्ड पर वापस जाएं",
+                command=lambda: self.navigate_to("dashboard"),
+                fg_color="#03F9FD",
+                hover_color="#00D2D6",
+                text_color="#001633",
+                font=ctk.CTkFont(weight="bold")
+            ).pack(pady=16)
+            self.current_view = err_box
+
+        self.sidebar.active_tab = view_name
         self.sidebar.refresh_badges()
 
     def on_data_updated(self):

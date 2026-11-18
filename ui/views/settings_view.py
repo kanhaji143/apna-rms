@@ -4,6 +4,7 @@ import zipfile
 from pathlib import Path
 from datetime import datetime
 import tkinter.filedialog as fd
+import tkinter.messagebox as mbox
 import customtkinter as ctk
 from PIL import Image
 from core.config import (
@@ -140,7 +141,9 @@ class SettingsView(ctk.CTkFrame):
         )
         btn_logo.pack(side="left", padx=(0, 12))
 
-        logo_status_text = f"Current Logo: {Path(self.config.get('logo_path', '')).name}"
+        logo_path_val = self.config.get("logo_path") or ""
+        logo_name = Path(logo_path_val).name if logo_path_val else "डिफ़ॉल्ट लोगो (Default)"
+        logo_status_text = f"Current Logo: {logo_name}"
         if not self.is_super:
             logo_status_text += " [🔒 लॉक - केवल सुपर एडमिन द्वारा परिवर्तनशील]"
         self.logo_path_lbl = ctk.CTkLabel(
@@ -783,22 +786,35 @@ class SettingsView(ctk.CTkFrame):
 
     def load_users_list(self):
         for w in self.users_box.winfo_children():
-            w.destroy()
+            try:
+                w.destroy()
+            except Exception:
+                pass
 
-        users = AuthManager.get_all_users()
+        try:
+            users = AuthManager.get_all_users()
+        except Exception:
+            users = []
+
         is_dark = self.config.get("theme", "dark") == "dark"
         for u in users:
-            row = ctk.CTkFrame(self.users_box, fg_color="transparent", height=30)
-            row.pack(fill="x", pady=2)
-            if u.get("role") == "super_admin" or u.get("username") == "hanuganeshan":
-                role_badge = "[👑 SUPER ADMIN - VENDOR]"
-                text_col = "#F59E0B"
-                lbl_txt = f"👑 {u['full_name']} (@{u['username']}) - {role_badge} (सुरक्षित / Non-deletable)"
-            else:
-                role_badge = f"[{u['role'].upper()}]"
-                text_col = "#CBD5E1" if is_dark else "#1E293B"
-                lbl_txt = f"👤 {u['full_name']} (@{u['username']}) - {role_badge}"
-            ctk.CTkLabel(row, text=lbl_txt, font=ctk.CTkFont(size=11, weight="bold"), text_color=text_col).pack(side="left")
+            try:
+                row = ctk.CTkFrame(self.users_box, fg_color="transparent", height=30)
+                row.pack(fill="x", pady=2)
+                role_val = str(u.get("role") or "staff").lower()
+                uname = str(u.get("username") or "user")
+                fname = str(u.get("full_name") or uname)
+                if role_val == "super_admin" or uname == "hanuganeshan":
+                    role_badge = "[👑 SUPER ADMIN - VENDOR]"
+                    text_col = "#F59E0B"
+                    lbl_txt = f"👑 {fname} (@{uname}) - {role_badge} (सुरक्षित / Non-deletable)"
+                else:
+                    role_badge = f"[{role_val.upper()}]"
+                    text_col = "#CBD5E1" if is_dark else "#1E293B"
+                    lbl_txt = f"👤 {fname} (@{uname}) - {role_badge}"
+                ctk.CTkLabel(row, text=lbl_txt, font=ctk.CTkFont(size=11, weight="bold"), text_color=text_col).pack(side="left")
+            except Exception:
+                pass
 
     def show_add_user_dialog(self):
         d = ctk.CTkToplevel(self)
