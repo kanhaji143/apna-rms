@@ -439,7 +439,19 @@ class SettingsView(ctk.CTkFrame):
                 font=ctk.CTkFont(size=11, weight="bold"),
                 command=self.do_change_logo
             )
-            btn_super_logo.pack(side="left")
+            btn_super_logo.pack(side="left", padx=(0, 10))
+
+            btn_keygen = ctk.CTkButton(
+                sec5_btn_row,
+                text="⚡ की जनरेटर (Key Generator)",
+                height=34,
+                fg_color="#0284C7",
+                hover_color="#0369A1",
+                text_color="#FFFFFF",
+                font=ctk.CTkFont(size=11, weight="bold"),
+                command=self.show_vendor_keygen_dialog
+            )
+            btn_keygen.pack(side="left")
         else:
             ctk.CTkLabel(
                 sec5_btn_row,
@@ -563,6 +575,170 @@ class SettingsView(ctk.CTkFrame):
             font=ctk.CTkFont(size=11, weight="bold"),
             command=save_pwd
         ).pack(fill="x", padx=30, pady=10)
+
+    def show_vendor_keygen_dialog(self):
+        """Open a dedicated Super Admin Key Generator popup for Krishna ji."""
+        from core.license_manager import LicenseManager, generate_license_key
+        lm = LicenseManager.get_instance()
+        current_install_id = lm.get_installation_id()
+
+        top = ctk.CTkToplevel(self)
+        top.title("⚡ वेंडर मास्टर लाइसेंस की जनरेटर — APNA Computer")
+        top.geometry("520x560")
+        top.resizable(False, False)
+        top.transient(self.winfo_toplevel())
+        top.grab_set()
+
+        top.update_idletasks()
+        w, h = 520, 560
+        x = (top.winfo_screenwidth() // 2) - (w // 2)
+        y = (top.winfo_screenheight() // 2) - (h // 2)
+        top.geometry(f"{w}x{h}+{x}+{y}")
+
+        is_dark = self.config.get("theme", "dark") == "dark"
+        top.configure(fg_color="#0F172A" if is_dark else "#F8FAFC")
+
+        pad = ctk.CTkFrame(top, fg_color="transparent")
+        pad.pack(fill="both", expand=True, padx=22, pady=18)
+
+        ctk.CTkLabel(
+            pad,
+            text="⚡ मास्टर लाइसेंस व एक्सटेंशन की जनरेटर",
+            font=ctk.CTkFont(family="Segoe UI", size=14, weight="bold"),
+            text_color="#38BDF8" if is_dark else "#0284C7"
+        ).pack(anchor="w", pady=(0, 2))
+
+        ctk.CTkLabel(
+            pad,
+            text="गोपनीय: केवल वेंडर (कृष्णा जी) के उपयोग हेतु | हेल्पलाइन: 8504985149",
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            text_color="#94A3B8" if is_dark else "#64748B"
+        ).pack(anchor="w", pady=(0, 14))
+
+        ctk.CTkLabel(
+            pad,
+            text="1. क्लाइंट कंप्यूटर Installation ID दर्ज करें:",
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold")
+        ).pack(anchor="w", pady=(0, 4))
+
+        id_entry = ctk.CTkEntry(pad, height=36, font=ctk.CTkFont(family="Consolas", size=13, weight="bold"))
+        id_entry.insert(0, current_install_id)
+        id_entry.pack(fill="x", pady=(0, 12))
+
+        ctk.CTkLabel(
+            pad,
+            text="2. वैधता अवधि (Duration) चुनें:",
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold")
+        ).pack(anchor="w", pady=(0, 4))
+
+        duration_options = [
+            "15 दिन एक्सटेंशन (New Batch Demo)",
+            "10 दिन एक्सटेंशन (Re-check Extension)",
+            "30 दिन एक्सटेंशन (VIP Trial Extension)",
+            "1 वर्ष (365 दिन) — वार्षिक नवीनीकरण (Recommended)",
+            "2 वर्ष (730 दिन)",
+            "3 वर्ष (1095 दिन)",
+            "आजीवन / 10 वर्ष (Lifetime Commercial License)"
+        ]
+        duration_map = {
+            "15 दिन एक्सटेंशन (New Batch Demo)": 15,
+            "10 दिन एक्सटेंशन (Re-check Extension)": 10,
+            "30 दिन एक्सटेंशन (VIP Trial Extension)": 30,
+            "1 वर्ष (365 दिन) — वार्षिक नवीनीकरण (Recommended)": 365,
+            "2 वर्ष (730 दिन)": 730,
+            "3 वर्ष (1095 दिन)": 1095,
+            "आजीवन / 10 वर्ष (Lifetime Commercial License)": 3650
+        }
+
+        dur_combo = ctk.CTkComboBox(pad, values=duration_options, height=36, font=ctk.CTkFont(size=11))
+        dur_combo.set(duration_options[0])
+        dur_combo.pack(fill="x", pady=(0, 14))
+
+        out_card = ctk.CTkFrame(pad, fg_color="#1E293B" if is_dark else "#E2E8F0", corner_radius=10)
+        out_card.pack(fill="x", pady=(0, 14))
+
+        out_inner = ctk.CTkFrame(out_card, fg_color="transparent")
+        out_inner.pack(fill="x", padx=14, pady=12)
+
+        ctk.CTkLabel(
+            out_inner,
+            text="🔑 जनरेट की गई अधिकृत की (Key):",
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+            text_color="#94A3B8" if is_dark else "#475569"
+        ).pack(anchor="w", pady=(0, 4))
+
+        key_display = ctk.CTkLabel(
+            out_inner,
+            text="— यहाँ की दिखाई देगी —",
+            font=ctk.CTkFont(family="Consolas", size=15, weight="bold"),
+            text_color="#38BDF8" if is_dark else "#0369A1"
+        )
+        key_display.pack(anchor="w", pady=(2, 6))
+
+        def on_generate():
+            cid = id_entry.get().strip().upper()
+            if not cid:
+                mbox.showerror("त्रुटि", "कृपया मान्य Installation ID दर्ज करें!", parent=top)
+                return
+            sel_label = dur_combo.get()
+            days = duration_map.get(sel_label, 15)
+            generated = generate_license_key(cid, days)
+            key_display.configure(text=generated)
+            btn_copy.configure(state="normal")
+            msg_text = (
+                f"नमस्ते! APNA Computer RMS सॉफ़्टवेयर को सक्रिय करने हेतु आपकी आधिकारिक की है:\n\n"
+                f"🔑 {generated}\n\n"
+                f"वैधता: {sel_label}\n"
+                f"Installation ID: {cid}\n\n"
+                f"सॉफ़्टवेयर में 'लाइसेंस की दर्ज करें' बॉक्स में पेस्ट करके सक्रिय करें।\n"
+                f"हेल्पलाइन: 8504985149 (APNA Computer)"
+            )
+            top.generated_msg = msg_text
+
+        def on_copy():
+            if hasattr(top, "generated_msg"):
+                top.clipboard_clear()
+                top.clipboard_append(top.generated_msg)
+                mbox.showinfo("सफलता", "पूरा WhatsApp संदेश क्लिपबोर्ड पर कॉपी हो गया है! इसे क्लाइंट को भेजें।", parent=top)
+
+        btn_row = ctk.CTkFrame(pad, fg_color="transparent")
+        btn_row.pack(fill="x", pady=(0, 10))
+
+        btn_gen = ctk.CTkButton(
+            btn_row,
+            text="⚡ की जनरेट करें (Generate)",
+            height=36,
+            fg_color="#0284C7",
+            hover_color="#0369A1",
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            command=on_generate
+        )
+        btn_gen.pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+        btn_copy = ctk.CTkButton(
+            btn_row,
+            text="📋 WhatsApp मैसेज कॉपी करें",
+            height=36,
+            state="disabled",
+            fg_color="#10B981",
+            hover_color="#059669",
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            command=on_copy
+        )
+        btn_copy.pack(side="right", fill="x", expand=True, padx=(6, 0))
+
+        ctk.CTkButton(
+            pad,
+            text="बंद करें (Close)",
+            height=32,
+            fg_color="#475569" if is_dark else "#94A3B8",
+            hover_color="#334155" if is_dark else "#64748B",
+            text_color="#FFFFFF",
+            command=top.destroy
+        ).pack(fill="x", pady=(6, 0))
+
 
     def save_institute_profile(self):
         self.config["institute_name"] = self.inst_name_entry.get().strip()

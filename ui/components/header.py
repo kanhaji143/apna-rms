@@ -86,6 +86,46 @@ class AppHeader(ctk.CTkFrame):
                 command=self.handle_demo_reset
             ).pack(side="left", padx=(0, 6), pady=4)
 
+        # Center: License & VIP Trial Status Pill
+        try:
+            from core.license_manager import LicenseManager
+            self.lm = LicenseManager.get_instance()
+            self.lic_info = self.lm.get_license_info()
+
+            is_locked = self.lic_info.get("is_locked")
+            status = self.lic_info.get("status")
+            badge_text = self.lic_info.get("display_text", "")
+
+            if is_locked:
+                b_fg = "#7F1D1D"
+                b_border = "#EF4444"
+                b_text = "#FCA5A5"
+            elif status in ("trial", "trial_extended"):
+                b_fg = "#451A03"
+                b_border = "#F59E0B"
+                b_text = "#FDE68A"
+            else:
+                b_fg = "#064E3B"
+                b_border = "#10B981"
+                b_text = "#6EE7B7"
+
+            self.lic_btn = ctk.CTkButton(
+                self,
+                text=badge_text,
+                height=30,
+                corner_radius=15,
+                border_width=1,
+                border_color=b_border,
+                fg_color=b_fg,
+                text_color=b_text,
+                hover_color=b_border,
+                font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+                command=self.open_license_dialog
+            )
+            self.lic_btn.pack(side="left", padx=14, pady=12)
+        except Exception as e:
+            print(f"[Header License] Error initializing license pill: {e}")
+
         # Right Frame: Controls & User Info
         right_frame = ctk.CTkFrame(self, fg_color="transparent")
         right_frame.pack(side="right", padx=16, fill="y")
@@ -225,3 +265,42 @@ class AppHeader(ctk.CTkFrame):
         if hasattr(self.master, "navigate_to"):
             current_tab = getattr(self.master.sidebar, "active_tab", "dashboard")
             self.master.navigate_to(current_tab)
+
+    def open_license_dialog(self):
+        try:
+            from ui.views.license_dialog import LicenseActivationDialog
+            LicenseActivationDialog(self.winfo_toplevel(), on_activated_callback=self.on_license_updated)
+        except Exception as e:
+            print(f"[Header License] Error opening dialog: {e}")
+
+    def on_license_updated(self):
+        try:
+            self.lic_info = self.lm.get_license_info()
+            is_locked = self.lic_info.get("is_locked")
+            status = self.lic_info.get("status")
+            badge_text = self.lic_info.get("display_text", "")
+
+            if is_locked:
+                b_fg = "#7F1D1D"
+                b_border = "#EF4444"
+                b_text = "#FCA5A5"
+            elif status in ("trial", "trial_extended"):
+                b_fg = "#451A03"
+                b_border = "#F59E0B"
+                b_text = "#FDE68A"
+            else:
+                b_fg = "#064E3B"
+                b_border = "#10B981"
+                b_text = "#6EE7B7"
+
+            if hasattr(self, "lic_btn"):
+                self.lic_btn.configure(
+                    text=badge_text,
+                    fg_color=b_fg,
+                    border_color=b_border,
+                    text_color=b_text,
+                    hover_color=b_border
+                )
+        except Exception as e:
+            print(f"[Header License] Error updating badge: {e}")
+

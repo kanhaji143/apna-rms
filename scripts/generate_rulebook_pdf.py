@@ -275,9 +275,9 @@ def generate_rulebook_html():
         </div>
     </div>
 
-    <div class="section-title">🏛️ 1. सिस्टम की 8 अपरिवर्तनीय नीतियाँ (Golden Rules)</div>
+    <div class="section-title">🏛️ 1. सिस्टम की 9 अपरिवर्तनीय नीतियाँ (Golden Rules)</div>
     <div style="font-size: 11.5px; color: #64748B; margin-bottom: 8px;">
-        इन 8 नियमों को भविष्य के किसी भी नए प्रोजेक्ट, फ़ीचर या कंपाइलेशन में कभी भी नहीं तोड़ना है:
+        इन 9 नियमों को भविष्य के किसी भी नए प्रोजेक्ट, फ़ीचर या कंपाइलेशन में कभी भी नहीं तोड़ना है:
     </div>
 
     <div class="golden-rule-card">
@@ -318,6 +318,11 @@ def generate_rulebook_html():
     <div class="golden-rule-card" style="border-left-color: #EF4444;">
         <div class="rule-num" style="color: #DC2626;">8. Windows 11 Smart App Control व ज़ीरो-स्क्रिप्ट नियम (Zero-Script & Clean Elevation)</div>
         <div class="rule-desc">क्लाइंट डिप्लॉयमेंट पैकेज में कभी भी लूज <span class="code-span">.bat</span> या <span class="code-span">.vbs</span> फ़ाइलें (जैसे 1_CLICK_UNBLOCK_SETUP.bat) न दें। Windows 11 AnyDesk/वेब डाउनलोड्स पर Mark-of-the-Web लगाता है। हमेशा इनोप सेटअप में <span class="code-span">PrivilegesRequiredOverridesAllowed=commandline</span> रखें और साइंड नेटिव <span class="code-span">.exe</span> दें ताकि Error 4551 कभी न आए।</div>
+    </div>
+
+    <div class="golden-rule-card" style="border-left-color: #10B981;">
+        <div class="rule-num" style="color: #059669;">9. 30-दिवसीय VIP मुफ़्त ट्रायल व हार्डवेयर बाउंड लाइसेंसिंग नियम (Trial & Extension Standard)</div>
+        <div class="rule-desc">हर नए पीसी पर 30-दिन VIP मुफ़्त ट्रायल (<span class="code-span">ACR-XXXX</span>) चालू होगा। 30 दिन बाद राइट-एक्सेस ग्रेसफुली लॉक होगी (डेटा 100% सुरक्षित व बैकअप डाउनलोड खुला रहेगा)। 10-15 दिन एक्सटेंशन की जनरेटर केवल सुपर एडमिन को उपलब्ध रहेगा और एंटी-क्लॉक टैम्परिंग सक्रिय रहेगी।</div>
     </div>
 </div>
 
@@ -503,18 +508,34 @@ def generate_rulebook_html():
     </div>
 </div>
 
-<!-- PAGE 4: BUG 13, SOP CHECKLIST & CONTACT -->
+<!-- PAGE 4: BUG 13 & 14, SOP CHECKLIST & CONTACT -->
 <div class="page">
-    <div class="bug-card" style="border-left: 3px solid #EF4444; margin-bottom: 8px;">
-        <div class="bug-header" style="background: #1E293B;">
-            <span>समस्या 13: Windows 11 Error 4551 (Smart App Control & Temp Block Fix)</span>
-            <span class="badge" style="background: #EF4444; color: #FFF;">Architecture Rule</span>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+        <!-- Bug 13 -->
+        <div class="bug-card" style="border-left: 3px solid #EF4444; margin-bottom: 0;">
+            <div class="bug-header" style="background: #1E293B;">
+                <span>समस्या 13: Windows 11 Error 4551 Fix</span>
+                <span class="badge" style="background: #EF4444; color: #FFF;">Rule</span>
+            </div>
+            <div class="bug-body" style="padding: 4px 8px; font-size: 10px;">
+                <div class="bug-row"><span class="bug-label" style="min-width: 50px;">लक्षण:</span> <span class="symptom-tag">AnyDesk पर Error 4551 Policy Block</span></div>
+                <div class="fix-box" style="padding: 3px 6px; font-size: 9.5px; margin-top: 2px;">
+                    <strong>समाधान:</strong> Inno Setup में <span class="code-span">PrivilegesRequiredOverridesAllowed=commandline</span> लगाएं, SHA-256 साइन करें व कोई लूज .bat न दें।
+                </div>
+            </div>
         </div>
-        <div class="bug-body" style="padding: 5px 9px;">
-            <div class="bug-row"><span class="bug-label">लक्षण (Symptom):</span> <span class="symptom-tag">AnyDesk/वेब से सेटअप चलाने पर Error 4551: Temporary directory application control policy block.</span></div>
-            <div class="bug-row"><span class="bug-label">मूल कारण (Cause):</span> <span class="cause-tag">Windows 11 Mark-of-the-Web टैग व अनसाइंड Inno Setup द्वारा Temp में हेल्पर एक्सट्रैक्ट होने पर SAC ब्लॉक।</span></div>
-            <div class="fix-box" style="padding: 4px 8px; font-size: 10px;">
-                <strong>स्थायी समाधान:</strong> 1. Inno Setup में <span class="code-span">PrivilegesRequiredOverridesAllowed=commandline</span> व <span class="code-span">PrivilegesRequired=auto</span> लगाएं। 2. इंस्टॉलर व लॉन्चर को <strong>Authenticode SHA-256</strong> से साइन करें। 3. <strong>ज़ीरो-स्क्रिप्ट नियम:</strong> कभी भी लूज <span class="code-span">.bat</span> या <span class="code-span">.vbs</span> न दें, केवल सिंगल साइंड <span class="code-span">.exe</span> दें।
+
+        <!-- Bug 14 -->
+        <div class="bug-card" style="border-left: 3px solid #10B981; margin-bottom: 0;">
+            <div class="bug-header" style="background: #064E3B;">
+                <span>समस्या 14: 30-Day Trial & 15-Day Extension</span>
+                <span class="badge" style="background: #10B981; color: #FFF;">License</span>
+            </div>
+            <div class="bug-body" style="padding: 4px 8px; font-size: 10px;">
+                <div class="bug-row"><span class="bug-label" style="min-width: 50px;">लक्षण:</span> <span class="symptom-tag">ट्रायल एक्सपायरी व नए बैच हेतु एक्सटेंशन</span></div>
+                <div class="fix-box" style="padding: 3px 6px; font-size: 9.5px; margin-top: 2px;">
+                    <strong>समाधान:</strong> 30 दिन बाद ग्रेसफुल लॉक, <span class="code-span">ACR-XXXX</span> ID व सुपर एडमिन द्वारा 10-15 दिन क्रिप्टोग्राफिक एक्सटेंशन की जनरेटर।
+                </div>
             </div>
         </div>
     </div>

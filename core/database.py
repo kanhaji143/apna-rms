@@ -1224,3 +1224,36 @@ class DatabaseManager:
             if temp_dir:
                 temp_dir.cleanup()
             return {"success": False, "error": f"डेटा मर्ज करते समय त्रुटि: {str(e)}"}
+
+    def get_setting(self, key: str, default: str = None) -> str:
+        """Fetch a system setting by key."""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT value FROM system_settings WHERE key = ?", (key,))
+                row = cursor.fetchone()
+                if row and row[0] is not None:
+                    return str(row[0])
+        except Exception as e:
+            print(f"[DB Setting] Error fetching setting {key}: {e}")
+        return default
+
+    def set_setting(self, key: str, value: str) -> bool:
+        """Store or update a system setting by key."""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO system_settings (key, value, updated_at)
+                    VALUES (?, ?, CURRENT_TIMESTAMP)
+                    ON CONFLICT(key) DO UPDATE SET
+                        value = excluded.value,
+                        updated_at = CURRENT_TIMESTAMP
+                """, (key, str(value)))
+                conn.commit()
+            self.sync_to_shadow_vault()
+            return True
+        except Exception as e:
+            print(f"[DB Setting] Error setting {key}: {e}")
+            return False
+

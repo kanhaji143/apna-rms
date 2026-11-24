@@ -32,6 +32,7 @@ class MainWindow(ctk.CTkFrame):
         role = self.current_user.get("role", "caller").lower()
         default_view = "admission" if role == "caller" else "dashboard"
         self.navigate_to(default_view)
+        self.check_license_lockout()
 
     def setup_ui(self):
         is_dark = self.config.get("theme", "dark") == "dark"
@@ -299,3 +300,14 @@ class MainWindow(ctk.CTkFrame):
             text_color="#FFFFFF",
             command=exit_without_sending
         ).pack(side="right")
+
+    def check_license_lockout(self):
+        try:
+            from core.license_manager import LicenseManager
+            lm = LicenseManager.get_instance()
+            info = lm.get_license_info()
+            if info.get("is_locked"):
+                self.after(500, self.header.open_license_dialog)
+        except Exception as e:
+            print(f"[License Check] Error: {e}")
+
