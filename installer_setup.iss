@@ -58,6 +58,7 @@ Source: "build\app_binaries\_internal\*"; DestDir: "{app}\_internal"; Flags: ign
 Source: "app_config.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\Documentation\LOGIN_DETAILS.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\Documentation\SYSTEM_RULEBOOK_AND_TROUBLESHOOTING.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\Documentation\SYSTEM_RULEBOOK_AND_TROUBLESHOOTING.pdf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\Documentation\ANTIVIRUS_AND_CLIENT_DEPLOYMENT_GUIDE.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\Documentation\APNA_Computer_RMS_Training_Manual.pdf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\Documentation\APNA_Computer_RMS_Sales_Pitch_Guide.pdf"; DestDir: "{app}"; Flags: ignoreversion
