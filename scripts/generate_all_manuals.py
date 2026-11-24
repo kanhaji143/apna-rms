@@ -715,7 +715,7 @@ def generate_client_training_manual_html():
         <tbody>
             <tr>
                 <td class="strong">तरीका A: वाई-फाई / LAN शेयरिंग (Recommended)</td>
-                <td>मालिक के PC के <code>D:\APNA_RMS_DATA</code> फोल्डर को शेयर कर दें। बाकी 3 कंप्यूटर के सेटिंग्स में शेयर्ड पाथ (जैसे: <code>\\\\DIRECTOR-PC\\APNA_RMS_DATA</code>) चुन दें।</td>
+                <td>मालिक के PC के <code>D:\\APNA_RMS_DATA</code> फोल्डर को शेयर कर दें। बाकी 3 कंप्यूटर के सेटिंग्स में शेयर्ड पाथ (जैसे: <code>\\\\DIRECTOR-PC\\APNA_RMS_DATA</code>) चुन दें।</td>
                 <td><b>100% ऑफ़लाइन व रीयल-टाइम:</b> इंटरनेट के बिना भी काउंसलर के एडमिशन करते ही डायरेक्टर की स्क्रीन पर 1 सेकंड में डेटा दिख जाएगा।</td>
             </tr>
             <tr>
@@ -733,8 +733,8 @@ def generate_client_training_manual_html():
 
     <div class="section-title">13. एक्सक्लूसिव "Self-Healing Shadow Vault" व एंटी-डिलीट सुरक्षा (Enterprise Protection)</div>
     <ul class="guide-list">
-        <li><b>सीक्रेट शैडो वॉल्ट (Hidden System Mirror):</b> सॉफ्टवेयर मुख्य फोल्डर के अलावा विंडोज़ की छिपी हुई डायरेक्टरी (<code>%LOCALAPPDATA%\APNA_Computer_RMS\vault\</code>) में एक अदृश्य बैकअप वॉल्ट बनाकर रखता है। हर नए एडमिशन, फीस व रसीद पर डेटा तुरंत इस वॉल्ट में ऑटो-मिरर हो जाता है।</li>
-        <li><b>स्टाफ या ऑपरेटर द्वारा फोल्डर डिलीट होने पर स्वतः रिकवरी (Self-Healing):</b> यदि कोई दुर्भावना या गलती से मुख्य <code>D:\APNA_RMS_DATA\</code> फोल्डर को <b>Shift + Delete</b> भी कर दे, तब भी सॉफ्टवेयर क्रैश नहीं होगा। अगली बार खुलते ही यह 1 सेकंड में सीक्रेट वॉल्ट से <b>100% डेटाबेस और सभी रसीदें अपने आप जिंदा (Auto-Restore)</b> कर लेता है!</li>
+        <li><b>सीक्रेट शैडो वॉल्ट (Hidden System Mirror):</b> सॉफ्टवेयर मुख्य फोल्डर के अलावा विंडोज़ की छिपी हुई डायरेक्टरी (<code>%LOCALAPPDATA%\\APNA_Computer_RMS\\vault\\</code>) में एक अदृश्य बैकअप वॉल्ट बनाकर रखता है। हर नए एडमिशन, फीस व रसीद पर डेटा तुरंत इस वॉल्ट में ऑटो-मिरर हो जाता है।</li>
+        <li><b>स्टाफ या ऑपरेटर द्वारा फोल्डर डिलीट होने पर स्वतः रिकवरी (Self-Healing):</b> यदि कोई दुर्भावना या गलती से मुख्य <code>D:\\APNA_RMS_DATA\\</code> फोल्डर को <b>Shift + Delete</b> भी कर दे, तब भी सॉफ्टवेयर क्रैश नहीं होगा। अगली बार खुलते ही यह 1 सेकंड में सीक्रेट वॉल्ट से <b>100% डेटाबेस और सभी रसीदें अपने आप जिंदा (Auto-Restore)</b> कर लेता है!</li>
         <li><b>ब्लैक बॉक्स सिक्योरिटी ऑडिट लॉग:</b> डेटा रीस्टोर होते ही <code>SECURITY_RECOVERY_LOG.txt</code> में समय व तारीख के साथ अनधिकृत छेड़छाड़ का सबूत दर्ज हो जाता है।</li>
         <li><b>D: ड्राइव सुरक्षा कवच:</b> मुख्य डेटा C: ड्राइव में नहीं, D: ड्राइव में रहता है, जिससे Windows फॉर्मेट होने पर भी डेटा पूरी तरह सुरक्षित रहता है।</li>
     </ul>
@@ -1016,7 +1016,110 @@ def generate_sales_pitch_guide_html():
     </div>
 </div>
 
+<!-- PAGE 3: 2-MINUTE MAGIC ELEVATOR PITCH & SYSTEM ARCHITECTURE DIAGRAM -->
+<div class="page">
+    <div class="page-header">
+        <span class="brand">APNA COMPUTER RMS — 2-Minute Executive Magic Pitch & Architecture Diagram</span>
+        <span>Helpline: 8504985149</span>
+    </div>
+
+    <div class="banner" style="padding: 12px 18px; margin-bottom: 8px;">
+        <h1 style="font-size: 18px;">⚡ 2-मिनट का अचूक मैजिक पिच (The 2-Minute Magic Elevator Pitch)</h1>
+        <p class="sub">जब ग्राहक के पास केवल 2 मिनट हों, तो ये 8 अनूठे फीचर्स और सिस्टम डायग्राम दिखाकर डील लॉक करें</p>
+    </div>
+
+    <!-- ARCHITECTURE FLOW DIAGRAM (VISUAL) -->
+    <div style="background: #F8FAFC; border: 1.5px solid #0284C7; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;">
+        <div style="font-weight: 700; color: #0284C7; font-size: 12px; margin-bottom: 6px;">
+            📊 सिस्टम सिक्योरिटी व लाइफसाइकल आर्किटेक्चर (Visual System Architecture)
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 6px; text-align: center; font-size: 10px;">
+            <div style="background: #E0F2FE; border: 1px solid #7DD3FC; border-radius: 6px; padding: 6px 4px;">
+                <strong style="color: #0369A1; font-size: 11px;">🖥️ रिसेप्शन / कैश काउंटर</strong><br>
+                100% ऑफलाइन लोकल ऐप<br>
+                <span class="tag">0.05s Instant Speed</span>
+            </div>
+            <div style="font-size: 14px; color: #0284C7;">⇄</div>
+            <div style="background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 6px; padding: 6px 4px;">
+                <strong style="color: #B45309; font-size: 11px;">📁 मुख्य डेटाबेस (D:\\ Drive)</strong><br>
+                SQLite WAL Mode<br>
+                <span class="tag" style="background:#FEF9C3; color:#854D0E;">User Visible</span>
+            </div>
+            <div style="font-size: 14px; color: #10B981;">⇄</div>
+            <div style="background: #DCFCE7; border: 1.5px solid #22C55E; border-radius: 6px; padding: 6px 4px;">
+                <strong style="color: #15803D; font-size: 11px;">🛡️ सेल्फ-हीलिंग शैडो वॉल्ट</strong><br>
+                Hidden LocalAppData Vault<br>
+                <span class="tag" style="background:#BBF7D0; color:#166534;">Auto 1s Self-Heal</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 6px; text-align: center; font-size: 10px; margin-top: 6px;">
+            <div style="background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 6px; padding: 5px 4px;">
+                <strong style="color: #334155;">⭐ 30-दिन VIP मुफ़्त ट्रायल</strong><br>
+                Hardware ID (ACR-XXXX)
+            </div>
+            <div style="font-size: 12px; color: #64748B;">➔</div>
+            <div style="background: #FEE2E2; border: 1px solid #FCA5A5; border-radius: 6px; padding: 5px 4px;">
+                <strong style="color: #B91C1C;">🔒 ग्रेसफुल लॉक (डेटा सेफ)</strong><br>
+                बैकअप डाउनलोड 100% खुला
+            </div>
+            <div style="font-size: 12px; color: #10B981;">➔</div>
+            <div style="background: #ECFDF5; border: 1.5px solid #10B981; border-radius: 6px; padding: 5px 4px;">
+                <strong style="color: #047857;">🔑 10-15 दिन WhatsApp एक्सटेंशन</strong><br>
+                सुपर एडमिन रिमोट एक्टिवेशन
+            </div>
+        </div>
+    </div>
+
+    <!-- 8 MAGIC TALKING POINTS (COMPACT GRID) -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10.5px;">
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 3px solid #10B981; border-radius: 6px; padding: 5px 8px;">
+            <strong style="color: #0F172A; font-size: 11px;">1. 🛡️ सेल्फ-हीलिंग शैडो वॉल्ट:</strong><br>
+            मुख्य फ़ोल्डर Shift+Delete होने पर भी हिडन वॉल्ट से 1 सेकंड में 100% डेटा व रसीदें ऑटो-रीस्टोर हो जाती हैं।
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 3px solid #0284C7; border-radius: 6px; padding: 5px 8px;">
+            <strong style="color: #0F172A; font-size: 11px;">2. ⚡ 100% ट्रू ऑफलाइन-फर्स्ट:</strong><br>
+            शून्य इंटरनेट, शून्य सर्वर बिल। बेसमेंट या ग्रामीण इलाके में भी 0.05 सेकंड की सुपरफास्ट स्पीड पर चलता है।
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 3px solid #8B5CF6; border-radius: 6px; padding: 5px 8px;">
+            <strong style="color: #0F172A; font-size: 11px;">3. 📄 क्रिस्टल-क्लियर हिंदी रसीदें:</strong><br>
+            Google Noto Sans Devanagari व Chromium शेपिंग इंजन—कोई काले डिब्बे (■■■) नहीं, शुद्ध A4/हाफ रसीद प्रिंट।
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 3px solid #F59E0B; border-radius: 6px; padding: 5px 8px;">
+            <strong style="color: #0F172A; font-size: 11px;">4. 🔑 30-दिन ट्रायल व रिमोट एक्सटेंशन:</strong><br>
+            हार्डवेयर-लॉक्ड ACR-XXXX ID। 30 दिन बाद वेंडर द्वारा WhatsApp पर 10-15 दिन का एक्सटेंशन कोड तुरंत जारी।
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 3px solid #EF4444; border-radius: 6px; padding: 5px 8px;">
+            <strong style="color: #0F172A; font-size: 11px;">5. ⏰ एंटी-क्लॉक टैम्परिंग इंजन:</strong><br>
+            यदि कोई ऑपरेटर कंप्यूटर की घड़ी पीछे करके ट्रायल बाईपास करने की कोशिश करे, तो सिस्टम तुरंत लॉक लगा देता है।
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 3px solid #059669; border-radius: 6px; padding: 5px 8px;">
+            <strong style="color: #0F172A; font-size: 11px;">6. 💾 1-क्लिक EOD बैकअप:</strong><br>
+            दिन समाप्त होने पर 1 क्लिक में पेनड्राइव बैकअप—कंप्यूटर जल जाए या चोरी हो जाए, कोचिंग का काम कभी नहीं रुकता।
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 3px solid #6366F1; border-radius: 6px; padding: 5px 8px;">
+            <strong style="color: #0F172A; font-size: 11px;">7. 🔀 मल्टी-पीसी सेफ डेटा मर्जिंग:</strong><br>
+            रिसेप्शन और डायरेक्टर केबिन के अलग-अलग पीसी का डेटा बिना किसी डुप्लीकेसी के 1 सेकंड में सुरक्षित मर्ज।
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 3px solid #0D9488; border-radius: 6px; padding: 5px 8px;">
+            <strong style="color: #0F172A; font-size: 11px;">8. 🔒 ज़ीरो-बैट व Authenticode साइंड:</strong><br>
+            कोई सस्पेक्टेड बैट फ़ाइल नहीं। Microsoft Authenticode SHA-256 साइंड सिंगल .exe जो बिना रुकावट के चलती है।
+        </div>
+    </div>
+
+    <div style="background: #00183A; color: #FFFFFF; padding: 10px 14px; border-radius: 6px; margin-top: 8px; font-size: 11px; display: flex; justify-content: space-between; align-items: center;">
+        <div>• <strong>सॉफ्टवेयर निर्माता:</strong> APNA Computer (कृष्णा जी)  • <strong>हेल्पलाइन:</strong> 8504985149</div>
+        <div style="color: #00F0FF; font-weight: bold;">Confidential Sales Closing Deck</div>
+    </div>
+
+    <div class="page-footer">
+        <span>Created BY: Apna Computer  |  Helpline: 8504985149</span>
+        <span>पेज 3</span>
+    </div>
+</div>
+
 </body>
+
 </html>
 """
     return html

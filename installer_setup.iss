@@ -62,6 +62,8 @@ Source: "dist\Documentation\SYSTEM_RULEBOOK_AND_TROUBLESHOOTING.pdf"; DestDir: "
 Source: "dist\Documentation\ANTIVIRUS_AND_CLIENT_DEPLOYMENT_GUIDE.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\Documentation\APNA_Computer_RMS_Training_Manual.pdf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\Documentation\APNA_Computer_RMS_Sales_Pitch_Guide.pdf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\Documentation\APNA_Computer_RMS_Presentation_Deck.pdf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\Documentation\APNA_Computer_RMS_Client_Pitch_Deck.pptx"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\Documentation\APNA_Computer_RMS_Development_Chat_History.pdf"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
