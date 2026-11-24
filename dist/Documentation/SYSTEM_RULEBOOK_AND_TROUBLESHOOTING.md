@@ -19,6 +19,8 @@
 6. **CustomTkinter बॉर्डर कलर नियम:** `border_color="transparent"` कभी नहीं लिखना है (यह विंडोज़ पर क्रैश करता है)। जब बॉर्डर न चाहिए हो तो `border_width=0` रखें।
 7. **EXE मेटाडेटा एवं प्रॉपर्टीज़ नियम (Windows Properties -> Details Tab Rule):**
    भविष्य के किसी भी प्रोजेक्ट या नए कंपाइलेशन में Windows Properties -> Details टैब को कभी खाली (`0.0.0.0` या Blank Copyright) नहीं छोड़ना है। PyInstaller के लिए `file_version_info.txt` और Inno Setup के लिए `VersionInfoCompany`, `VersionInfoDescription`, `VersionInfoVersion=1.0.0.0`, `VersionInfoCopyright`, `AppComments` हमेशा अनिवार्य रूप से जोड़े जाएंगे ताकि क्लाइंट राइट-क्लिक करके डेवलपर, हेल्पलाइन नंबर और अधिकृत कॉपीराइट देख सके।
+8. **Windows 11 Smart App Control व ज़ीरो-स्क्रिप्ट नियम (Zero-Script & Clean Elevation Rule):**
+   क्लाइंट डिप्लॉयमेंट पैकेज में कभी भी लूज `.bat` या `.vbs` फ़ाइलें (जैसे `1_CLICK_UNBLOCK_SETUP.bat` या `launcher.vbs`) नहीं देनी हैं। Windows 11 (विशेष रूप से 24H2) AnyDesk व इंटरनेट से आई फाइलों पर Mark-of-the-Web लगाता है और ऐसी स्क्रिप्ट्स को ब्लॉक करता है। हमेशा एक साइंड नेटिव `.exe` लॉन्चर इस्तेमाल करें और इनोप सेटअप में `PrivilegesRequiredOverridesAllowed=commandline` व Authenticode SHA-256 सिग्नेचर अनिवार्य रखें ताकि Error 4551 कभी न आए।
 
 ---
 
@@ -186,6 +188,27 @@
 
 ---
 
+### समस्या 13: Windows 11 Error 4551 ("Unable to execute file in the temporary directory. An Application control policy has blocked this file")
+* **लक्षण (Symptom):**  
+  Windows 11 (विशेष रूप से 24H2) पर जब AnyDesk, WhatsApp या वेब डाउनलोड से भेजा गया इनोप इंस्टॉलर (`Setup.exe`) चलाया जाता है, तो स्क्रीन पर एरर आता है:  
+  `Unable to execute file in the temporary directory. Setup aborted. Error 4551: An Application control policy has blocked this file.`
+* **मूल कारण (Root Cause):**  
+  1. AnyDesk या इंटरनेट से आई फाइलों पर Windows स्वतः **Mark-of-the-Web (Zone.Identifier = 3)** सुरक्षा टैग लगा देता है।  
+  2. इनोप सेटअप शुरू होते ही `%LOCALAPPDATA%\Temp` में एक आंतरिक हेल्पर बाइनरी (`is-XXXXX.tmp`) निकालता है।  
+  3. यदि इंस्टॉलर अनसाइंड हो या `PrivilegesRequired=admin` पर जबरन एलिवेशन मांग रहा हो, तो Windows 11 का **Smart App Control (SAC)** व Application Control Policy टेम्प डायरेक्टरी से अनसाइंड कोड निष्पादित होने पर रोक लगा देती है।  
+  4. कई डेवलपर्स इसके लिए `1_CLICK_UNBLOCK_SETUP.bat` जैसी बैट फाइल्स का जुगाड़ देते हैं, जिससे क्लाइंट डर जाता है और एंटीवायरस उसे संदिग्ध मानता है।
+* **स्थायी आर्किटेक्चरल समाधान (Permanent Fix - Zero Script Standard):**  
+  1. **Inno Setup कॉन्फ़िगरेशन (`installer_setup.iss`):**  
+     `[Setup]` सेक्शन में निम्नलिखित फ्लैग्स जोड़ें:  
+     - `PrivilegesRequiredOverridesAllowed=commandline` (जबरन टेम्प एलिवेशन बाईपास हेतु)।  
+     - `PrivilegesRequired=auto` या `lowest` (यूजर प्रोफाइल में सुरक्षित निष्पादन हेतु)।  
+  2. **Authenticode SHA-256 कोड साइनिंग:**  
+     सॉफ्टवेयर के मुख्य इंस्टॉलर और अनइंस्टॉलर को वैध डिजिटल सिग्नेचर से साइन करें। Windows 11 Smart App Control साइंड बाइनरी को टेम्प में कभी ब्लॉक नहीं करता।  
+  3. **ज़ीरो-स्क्रिप्ट नियम (Zero-Script Standard):**  
+     क्लाइंट पैकेज में कभी भी `.bat` या `.vbs` फाइलें न दें। हमेशा C++/C#/Python का कंपाइल किया हुआ साइंड `.exe` लॉन्चर दें जो बैकग्राउंड प्रोसेस को साइलेंटली शुरू कर सके।
+
+---
+
 ## 🛠️ 3. भविष्य के लिए डेवलपमेंट व डिप्लॉयमेंट चेकलिस्ट (SOP)
 
 जब भी भविष्य में कोई नया बदलाव किया जाए, डेवलपर को निम्नलिखित चरणों का अनिवार्य रूप से पालन करना होगा:
@@ -204,6 +227,8 @@
   ```
 - [ ] बिल्ड पूरा होने पर `powershell -ExecutionPolicy Bypass -File scripts/sign_executable.ps1` द्वारा डिजिटल हस्ताक्षर लगाएं।
 - [ ] `dist/APNA_Computer_RMS_Setup.exe` पर राइट-क्लिक करके Properties -> Details व Digital Signatures टैब चेक करें।
+- [ ] `installer_setup.iss` में `PrivilegesRequiredOverridesAllowed=commandline` सुनिश्चित करें ताकि Windows 11 Error 4551 कभी उत्पन्न न हो।
+- [ ] पैकेज में कोई लूज `.bat` या `.vbs` फ़ाइल न हो—केवल 100% साइंड `.exe` सेटअप ही क्लाइंट को दें।
 
 ### चरण 3: गिट कमिट करते समय
 - [ ] `git status` में चेक करें कि कोई टेस्ट/स्क्रैच फाइल (`test_*.py`, `test_*.pdf`) ट्रैक न हो रही हो।

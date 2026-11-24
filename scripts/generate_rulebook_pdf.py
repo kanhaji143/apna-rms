@@ -109,8 +109,8 @@ def generate_rulebook_html():
         border: 1px solid #E2E8F0;
         border-left: 4px solid #F59E0B;
         border-radius: 6px;
-        padding: 7px 11px;
-        margin-bottom: 7px;
+        padding: 5px 10px;
+        margin-bottom: 5px;
     }}
 
     .golden-rule-card .rule-num {{
@@ -275,9 +275,9 @@ def generate_rulebook_html():
         </div>
     </div>
 
-    <div class="section-title">🏛️ 1. सिस्टम की 7 अपरिवर्तनीय नीतियाँ (Golden Rules)</div>
-    <div style="font-size: 11.5px; color: #64748B; margin-bottom: 12px;">
-        इन 7 नियमों को भविष्य के किसी भी नए प्रोजेक्ट, फ़ीचर या कंपाइलेशन में कभी भी नहीं तोड़ना है:
+    <div class="section-title">🏛️ 1. सिस्टम की 8 अपरिवर्तनीय नीतियाँ (Golden Rules)</div>
+    <div style="font-size: 11.5px; color: #64748B; margin-bottom: 8px;">
+        इन 8 नियमों को भविष्य के किसी भी नए प्रोजेक्ट, फ़ीचर या कंपाइलेशन में कभी भी नहीं तोड़ना है:
     </div>
 
     <div class="golden-rule-card">
@@ -313,6 +313,11 @@ def generate_rulebook_html():
     <div class="golden-rule-card" style="border-left-color: #00D2D6;">
         <div class="rule-num" style="color: #0284C7;">7. EXE मेटाडेटा एवं प्रॉपर्टीज़ नियम (Windows Properties -> Details Tab Rule)</div>
         <div class="rule-desc">भविष्य के किसी भी प्रोजेक्ट या नए कंपाइलेशन में Windows Properties -> Details टैब को कभी खाली (<span class="code-span">0.0.0.0</span> या Blank Copyright) नहीं छोड़ना है। PyInstaller के लिए <span class="code-span">file_version_info.txt</span> और Inno Setup के लिए <span class="code-span">VersionInfoCompany</span>, <span class="code-span">VersionInfoDescription</span>, <span class="code-span">VersionInfoVersion=1.0.0.0</span>, <span class="code-span">VersionInfoCopyright</span>, <span class="code-span">AppComments</span> हमेशा अनिवार्य रूप से जोड़े जाएंगे ताकि क्लाइंट राइट-क्लिक करके डेवलपर, हेल्पलाइन नंबर और अधिकृत कॉपीराइट देख सके।</div>
+    </div>
+
+    <div class="golden-rule-card" style="border-left-color: #EF4444;">
+        <div class="rule-num" style="color: #DC2626;">8. Windows 11 Smart App Control व ज़ीरो-स्क्रिप्ट नियम (Zero-Script & Clean Elevation)</div>
+        <div class="rule-desc">क्लाइंट डिप्लॉयमेंट पैकेज में कभी भी लूज <span class="code-span">.bat</span> या <span class="code-span">.vbs</span> फ़ाइलें (जैसे 1_CLICK_UNBLOCK_SETUP.bat) न दें। Windows 11 AnyDesk/वेब डाउनलोड्स पर Mark-of-the-Web लगाता है। हमेशा इनोप सेटअप में <span class="code-span">PrivilegesRequiredOverridesAllowed=commandline</span> रखें और साइंड नेटिव <span class="code-span">.exe</span> दें ताकि Error 4551 कभी न आए।</div>
     </div>
 </div>
 
@@ -498,18 +503,32 @@ def generate_rulebook_html():
     </div>
 </div>
 
-<!-- PAGE 4: SOP CHECKLIST & CONTACT -->
+<!-- PAGE 4: BUG 13, SOP CHECKLIST & CONTACT -->
 <div class="page">
+    <div class="bug-card" style="border-left: 3px solid #EF4444; margin-bottom: 8px;">
+        <div class="bug-header" style="background: #1E293B;">
+            <span>समस्या 13: Windows 11 Error 4551 (Smart App Control & Temp Block Fix)</span>
+            <span class="badge" style="background: #EF4444; color: #FFF;">Architecture Rule</span>
+        </div>
+        <div class="bug-body" style="padding: 5px 9px;">
+            <div class="bug-row"><span class="bug-label">लक्षण (Symptom):</span> <span class="symptom-tag">AnyDesk/वेब से सेटअप चलाने पर Error 4551: Temporary directory application control policy block.</span></div>
+            <div class="bug-row"><span class="bug-label">मूल कारण (Cause):</span> <span class="cause-tag">Windows 11 Mark-of-the-Web टैग व अनसाइंड Inno Setup द्वारा Temp में हेल्पर एक्सट्रैक्ट होने पर SAC ब्लॉक।</span></div>
+            <div class="fix-box" style="padding: 4px 8px; font-size: 10px;">
+                <strong>स्थायी समाधान:</strong> 1. Inno Setup में <span class="code-span">PrivilegesRequiredOverridesAllowed=commandline</span> व <span class="code-span">PrivilegesRequired=auto</span> लगाएं। 2. इंस्टॉलर व लॉन्चर को <strong>Authenticode SHA-256</strong> से साइन करें। 3. <strong>ज़ीरो-स्क्रिप्ट नियम:</strong> कभी भी लूज <span class="code-span">.bat</span> या <span class="code-span">.vbs</span> न दें, केवल सिंगल साइंड <span class="code-span">.exe</span> दें।
+            </div>
+        </div>
+    </div>
+
     <div class="section-title">🛠️ 3. भविष्य के लिए डेवलपमेंट व डिप्लॉयमेंट चेकलिस्ट (SOP)</div>
-    <div style="font-size: 11.5px; color: #64748B; margin-bottom: 10px;">
+    <div style="font-size: 11px; color: #64748B; margin-bottom: 6px;">
         जब भी भविष्य में कोई नया बदलाव किया जाए, डेवलपर को निम्नलिखित चरणों का अनिवार्य रूप से पालन करना होगा:
     </div>
 
-    <table class="checklist-table">
+    <table class="checklist-table" style="font-size: 10px;">
         <thead>
             <tr>
-                <th style="width: 25%;">स्टेज</th>
-                <th style="width: 50%;">कार्य एवं अनिवार्य चेकपॉइंट</th>
+                <th style="width: 22%;">स्टेज</th>
+                <th style="width: 53%;">कार्य एवं अनिवार्य चेकपॉइंट</th>
                 <th style="width: 25%;">कमांड / लोकेशन</th>
             </tr>
         </thead>
@@ -527,7 +546,7 @@ def generate_rulebook_html():
                 <td><strong>चरण 2: वर्शन व मेटाडेटा</strong></td>
                 <td>
                     • <span class="code-span">file_version_info.txt</span> में वर्शन 1.0.0.0 व हेल्पलाइन चेक करें<br>
-                    • <span class="code-span">installer_setup.iss</span> में VersionInfo directivies चेक करें
+                    • <span class="code-span">installer_setup.iss</span> में VersionInfo directives व PrivilegesRequiredOverridesAllowed चेक करें
                 </td>
                 <td>Root Directory</td>
             </tr>
@@ -535,7 +554,7 @@ def generate_rulebook_html():
                 <td><strong>चरण 3: नया EXE बिल्ड</strong></td>
                 <td>
                     • <span class="code-span">fonts/</span> में चारों TTF फाइलें मौजूद हों<br>
-                    • PyInstaller और Inno Setup द्वारा नया सेटअप कंपाइल करें
+                    • कोई लूज .bat या .vbs न दें—केवल 100% साइंड .exe सेटअप प्रदान करें
                 </td>
                 <td><span class="code-span">python scripts/build_portable_and_installer.py</span></td>
             </tr>
@@ -566,11 +585,11 @@ def generate_rulebook_html():
         </tbody>
     </table>
 
-    <div style="background: linear-gradient(135deg, #0A2540 0%, #133E68 100%); color: #FFFFFF; border-radius: 10px; padding: 18px 22px; margin-top: 30px;">
-        <div style="font-size: 15px; font-weight: 700; color: #00D2D6; margin-bottom: 8px;">
+    <div style="background: linear-gradient(135deg, #0A2540 0%, #133E68 100%); color: #FFFFFF; border-radius: 8px; padding: 12px 18px; margin-top: 10px;">
+        <div style="font-size: 13.5px; font-weight: 700; color: #00D2D6; margin-bottom: 6px;">
             📞 आधिकारिक संपर्क व तकनीकी सहायता (Authorized Contact & Support)
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 11px;">
             <div>• <strong>सॉफ्टवेयर निर्माता:</strong> APNA Computer (कृष्णा जी)</div>
             <div>• <strong>आधिकारिक हेल्पलाइन:</strong> 8504985149</div>
             <div>• <strong>सपोर्ट ईमेल:</strong> krishnaskb143@gmail.com</div>
