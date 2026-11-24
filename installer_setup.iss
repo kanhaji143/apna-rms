@@ -16,6 +16,9 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
+AppComments=Helpline: 8504985149 | Email: krishnaskb143@gmail.com | Developed by Krishna ji
+AppContact=8504985149
+AppCopyright=Copyright (C) 2026 APNA Computer (Helpline: 8504985149). All rights reserved.
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
@@ -30,6 +33,17 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 DisableProgramGroupPage=yes
 CloseApplications=yes
 CloseApplicationsFilter=*.exe
+
+; Windows File Properties -> Details Tab Metadata
+VersionInfoVersion=1.0.0.0
+VersionInfoTextVersion=1.0.0.0
+VersionInfoProductVersion=1.0.0.0
+VersionInfoProductTextVersion=1.0.0.0
+VersionInfoCompany=APNA Computer (Helpline: 8504985149)
+VersionInfoDescription=APNA Computer RMS Setup - Institute Management Software (Helpline: 8504985149)
+VersionInfoCopyright=Copyright (C) 2026 APNA Computer (Helpline: 8504985149). All rights reserved.
+VersionInfoProductName=APNA Computer RMS
+VersionInfoOriginalFileName=APNA_Computer_RMS_Setup.exe
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
