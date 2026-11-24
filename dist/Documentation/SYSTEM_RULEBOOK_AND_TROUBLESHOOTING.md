@@ -17,6 +17,8 @@
 4. **एग्जीक्यूटेबल नामकरण (EXE Naming):** आउटपुट फाइल का नाम हमेशा शुद्ध रूप से `APNA_Computer_RMS.exe` रहेगा। कभी भी "Release" या कोई अन्य प्रत्यय (suffix) नहीं जोड़ा जाएगा।
 5. **CustomTkinter फॉन्ट साइज़ नियम:** Python 3.15 में CustomTkinter के सभी फॉन्ट साइज़ **अनिवार्य रूप से पूर्णांक (Integer - जैसे 11, 12, 14)** होने चाहिए। कभी भी फ्लोट (`11.5`, `9.5`) नहीं देना है।
 6. **CustomTkinter बॉर्डर कलर नियम:** `border_color="transparent"` कभी नहीं लिखना है (यह विंडोज़ पर क्रैश करता है)। जब बॉर्डर न चाहिए हो तो `border_width=0` रखें।
+7. **EXE मेटाडेटा एवं प्रॉपर्टीज़ नियम (Windows Properties -> Details Tab Rule):**
+   भविष्य के किसी भी प्रोजेक्ट या नए कंपाइलेशन में Windows Properties -> Details टैब को कभी खाली (`0.0.0.0` या Blank Copyright) नहीं छोड़ना है। PyInstaller के लिए `file_version_info.txt` और Inno Setup के लिए `VersionInfoCompany`, `VersionInfoDescription`, `VersionInfoVersion=1.0.0.0`, `VersionInfoCopyright`, `AppComments` हमेशा अनिवार्य रूप से जोड़े जाएंगे ताकि क्लाइंट राइट-क्लिक करके डेवलपर, हेल्पलाइन नंबर और अधिकृत कॉपीराइट देख सके।
 
 ---
 
@@ -163,6 +165,27 @@
 
 ---
 
+### समस्या 12: Windows Properties -> Details टैब में 0.0.0.0 वर्शन व ब्लैंक कॉपीराइट दिखना
+* **लक्षण (Symptom):**  
+  क्लाइंट या ऑपरेटर जब `Setup.exe` पर राइट-क्लिक करके Properties -> Details देखता था, तो File version `0.0.0.0` आता था, Copyright पूरी तरह खाली था, और Company Name व Helpline नहीं दिखती थी।
+* **मूल कारण (Root Cause):**  
+  Inno Setup कंपाइलर की स्क्रिप्ट (`installer_setup.iss`) में `VersionInfoVersion` और संबंधित `VersionInfo*` डायरेक्टिव्स शामिल नहीं थे।
+* **स्थायी समाधान (Permanent Fix):**  
+  1. **Inno Setup (`installer_setup.iss`) कॉन्फ़िगरेशन:**  
+     `[Setup]` सेक्शन में निम्नलिखित डायरेक्टिव्स स्थायी रूप से जोड़े गए:  
+     - `VersionInfoVersion=1.0.0.0` (File Version)  
+     - `VersionInfoProductVersion=1.0.0.0` (Product Version)  
+     - `VersionInfoCompany=APNA Computer (Helpline: 8504985149)`  
+     - `VersionInfoDescription=APNA Computer RMS Setup - Institute Management Software (Helpline: 8504985149)`  
+     - `VersionInfoCopyright=Copyright (C) 2026 APNA Computer (Helpline: 8504985149). All rights reserved.`  
+     - `AppComments=Helpline: 8504985149 | Email: krishnaskb143@gmail.com | Developed by Krishna ji`  
+  2. **PyInstaller (`file_version_info.txt`) कॉन्फ़िगरेशन:**  
+     मुख्य सॉफ्टवेयर (`APNA_Computer_RMS.exe`) के लिए `StringTable` में CompanyName, FileDescription, Comments (Helpline, Email, Developer), LegalCopyright और LegalTrademarks जोड़े गए।  
+  3. **Build Pipeline:**  
+     `scripts/build_portable_and_installer.py` में `--version-file=file_version_info.txt` सुनिश्चित किया गया तथा कंपाइल होने के बाद `scripts/sign_executable.ps1` द्वारा डिजिटल हस्ताक्षर लगाना अनिवार्य किया गया।
+
+---
+
 ## 🛠️ 3. भविष्य के लिए डेवलपमेंट व डिप्लॉयमेंट चेकलिस्ट (SOP)
 
 जब भी भविष्य में कोई नया बदलाव किया जाए, डेवलपर को निम्नलिखित चरणों का अनिवार्य रूप से पालन करना होगा:
@@ -174,12 +197,13 @@
 
 ### चरण 2: नया EXE बिल्ड करते समय
 - [ ] यह सुनिश्चित करें कि `fonts/` फ़ोल्डर में चारों TTF फ़ाइलें मौजूद हैं।
+- [ ] `file_version_info.txt` और `installer_setup.iss` में VersionInfo (Company, Description, Version 1.0.0.0, Copyright, Helpline) सही से कॉन्फ़िगर है।
 - [ ] बिल्ड कमांड हमेशा प्रोजेक्ट की रूट डायरेक्टरी से चलाएं:
   ```bash
-  python build_installer.py
+  python scripts/build_portable_and_installer.py
   ```
-- [ ] बिल्ड पूरा होने पर `dist/APNA_Computer_RMS.exe` को एक बार चलाकर टेस्ट करें।
-- [ ] `dist/APNA_Computer_RMS_Full_Package.zip` को रिपैक करें।
+- [ ] बिल्ड पूरा होने पर `powershell -ExecutionPolicy Bypass -File scripts/sign_executable.ps1` द्वारा डिजिटल हस्ताक्षर लगाएं।
+- [ ] `dist/APNA_Computer_RMS_Setup.exe` पर राइट-क्लिक करके Properties -> Details व Digital Signatures टैब चेक करें।
 
 ### चरण 3: गिट कमिट करते समय
 - [ ] `git status` में चेक करें कि कोई टेस्ट/स्क्रैच फाइल (`test_*.py`, `test_*.pdf`) ट्रैक न हो रही हो।
