@@ -18,8 +18,6 @@ def main():
         "--add-data=Logo.png;.",
         "--add-data=app_config.json;.",
         "--add-data=fonts;fonts",
-        "--add-data=core;core",
-        "--add-data=ui;ui",
         "--distpath=build/app_binaries_dist",
         "--noconfirm",
         "app.py"

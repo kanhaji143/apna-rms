@@ -177,11 +177,15 @@ class LicenseManager:
             display_text = f"⭐ 30-दिवसीय VIP मुफ़्त ट्रायल ({delta} दिन शेष)"
             lock_title = ""
             lock_message = ""
+        elif status == "trial_extended":
+            display_text = f"⏳ VIP ट्रायल एक्सटेंशन ({delta} दिन शेष)"
+            lock_title = ""
+            lock_message = ""
         else:
             if delta > 3000:
-                display_text = "🟢 अधिकृत आजीवन लाइसेंस (Lifetime Active)"
+                display_text = "⭐ अधिकृत आजीवन लाइसेंस (Lifetime Active)"
             else:
-                display_text = f"🟢 अधिकृत लाइसेंस सक्रिय ({delta} दिन शेष)"
+                display_text = f"⭐ अधिकृत लाइसेंस सक्रिय ({delta} दिन शेष)"
             lock_title = ""
             lock_message = ""
 

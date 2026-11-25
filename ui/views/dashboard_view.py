@@ -56,17 +56,81 @@ class DashboardView(ctk.CTkFrame):
         sub_greeting.pack(anchor="w")
 
         right_b = ctk.CTkFrame(banner, fg_color="transparent")
-        right_b.pack(side="right", padx=20, pady=16)
+        right_b.pack(side="right", padx=20, pady=12)
 
         from datetime import datetime
-        today_display = datetime.now().strftime("%d-%b-%Y")
-        ctk.CTkLabel(
-            right_b,
-            text=f"📅 {today_display}\n🟢 Local DB Active",
-            font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
-            text_color="#10B981" if is_dark else "#065F46",
+        now_dt = datetime.now()
+        date_time_str = now_dt.strftime("📅 %d-%b-%Y  •  ⏰ %I:%M %p")
+
+        # License & Trial Countdown Info
+        try:
+            from core.license_manager import LicenseManager
+            lm = LicenseManager.get_instance()
+            lic_info = lm.get_license_info()
+            days_left = lic_info.get("days_left", 0)
+            is_locked = lic_info.get("is_locked", False)
+            status = lic_info.get("status", "trial")
+
+            if is_locked:
+                pill_text = f"🔒 ट्रायल समाप्त (0 दिन शेष) — अभी सक्रिय करें"
+                pill_fg = "#7F1D1D"
+                pill_border = "#EF4444"
+                pill_txt_col = "#FCA5A5"
+            elif status == "trial":
+                pill_text = f"⏳ 30-दिन VIP मुफ़्त ट्रायल: {days_left} दिन शेष"
+                pill_fg = "#451A03"
+                pill_border = "#F59E0B"
+                pill_txt_col = "#FDE68A"
+            elif status == "trial_extended":
+                pill_text = f"⏳ VIP ट्रायल एक्सटेंशन: {days_left} दिन शेष"
+                pill_fg = "#78350F"
+                pill_border = "#F59E0B"
+                pill_txt_col = "#FEF3C7"
+            elif status == "active":
+                if days_left > 1000:
+                    pill_text = "⭐ आजीवन अधिकृत लाइसेंस (Lifetime Active)"
+                else:
+                    pill_text = f"⭐ वार्षिक लाइसेंस सक्रिय: {days_left} दिन शेष"
+                pill_fg = "#064E3B"
+                pill_border = "#10B981"
+                pill_txt_col = "#6EE7B7"
+            else:
+                pill_text = f"⭐ लाइसेंस स्थिति: {days_left} दिन शेष"
+                pill_fg = "#0F2240"
+                pill_border = "#38BDF8"
+                pill_txt_col = "#E0F2FE"
+        except Exception:
+            pill_text = "🟢 लोकल डेटाबेस सक्रिय"
+            pill_fg = "#064E3B"
+            pill_border = "#10B981"
+            pill_txt_col = "#6EE7B7"
+
+        info_col = ctk.CTkFrame(right_b, fg_color="transparent")
+        info_col.pack(side="right", fill="y")
+
+        dt_lbl = ctk.CTkLabel(
+            info_col,
+            text=date_time_str,
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+            text_color="#94A3B8" if is_dark else "#475569",
             justify="right"
-        ).pack(side="right")
+        )
+        dt_lbl.pack(anchor="e", pady=(0, 4))
+
+        lic_btn = ctk.CTkButton(
+            info_col,
+            text=pill_text,
+            height=28,
+            corner_radius=14,
+            border_width=1.5,
+            border_color=pill_border,
+            fg_color=pill_fg,
+            text_color=pill_txt_col,
+            hover_color=pill_border,
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+            command=self.open_license_dialog
+        )
+        lic_btn.pack(anchor="e")
 
         # 6 KPI Cards Grid
         kpi_grid = ctk.CTkFrame(self, fg_color="transparent")
@@ -293,3 +357,12 @@ class DashboardView(ctk.CTkFrame):
                         font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold" if clr else "normal"),
                         text_color=clr if clr else (COLOR_TEXT_LIGHT if is_dark else COLOR_TEXT_DARK)
                     ).pack(side="left", padx=6)
+
+    def open_license_dialog(self):
+        """Open license activation dialog and refresh dashboard if state changes."""
+        from ui.views.license_dialog import LicenseDialog
+        d = LicenseDialog(self)
+        self.wait_window(d)
+        for widget in self.winfo_children():
+            widget.destroy()
+        self.setup_ui()

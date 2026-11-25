@@ -17,13 +17,12 @@ import hashlib
 SALT = "APNA_COMPUTER_RMS_8504985149"
 
 DURATION_OPTIONS = {
-    "1": (15, "15 दिन एक्सटेंशन (New Batch Demo / री-चेक)"),
-    "2": (10, "10 दिन एक्सटेंशन (Re-check Extension)"),
-    "3": (30, "30 दिन एक्सटेंशन (VIP Trial Extension)"),
-    "4": (365, "1 वर्ष (365 दिन) — वार्षिक नवीनीकरण लाइसेंस (Recommended)"),
-    "5": (730, "2 वर्ष (730 दिन)"),
-    "6": (1095, "3 वर्ष (1095 दिन)"),
-    "7": (3650, "आजीवन / 10 वर्ष (Lifetime Commercial License)")
+    "1": (365, "1 वर्ष (365 दिन) — वार्षिक एक्टिवेशन लाइसेंस (Annual License)"),
+    "2": (3650, "आजीवन / 10 वर्ष (Lifetime Commercial License — पूर्ण परमानेंट एक्टिवेशन)"),
+    "3": (15, "15 दिन एक्सटेंशन (अधिकतम 15 दिन अतिरिक्त VIP ट्रायल — New Batch Demo)"),
+    "4": (30, "30 दिन VIP ट्रायल (30 दिन अतिरिक्त VIP ट्रायल)"),
+    "5": (730, "2 वर्ष (730 दिन) — द्वि-वार्षिक लाइसेंस"),
+    "6": (1095, "3 वर्ष (1095 दिन) — त्रि-वार्षिक लाइसेंस")
 }
 
 def generate_key(installation_id: str, validity_days: int) -> str:
@@ -55,11 +54,11 @@ def main():
         print(f"  [{k}] {label}")
     print()
 
-    choice = input("विकल्प चुनें [1-7, डिफ़ॉल्ट 1]: ").strip()
+    choice = input("विकल्प चुनें [1-6, डिफ़ॉल्ट 1]: ").strip()
     if not choice:
         choice = "1"
 
-    days, label = DURATION_OPTIONS.get(choice, (15, "15 दिन एक्सटेंशन"))
+    days, label = DURATION_OPTIONS.get(choice, (365, "1 वर्ष (365 दिन) — वार्षिक एक्टिवेशन लाइसेंस"))
     key = generate_key(install_id, days)
 
     print()
